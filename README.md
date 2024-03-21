@@ -15,11 +15,3 @@ Built with Spotify API, PostgreSQL, HTML and JS.
 ## Prerequisites to Run TuneSign
 No prerequisites or dependencies need to be installed locally
 
-## Instructions on How to Run the Application Locally
-N/a
-
-## How to Run the Tests
-N/a
-
-## Link to the Deployed Application
-N/a

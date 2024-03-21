@@ -3,11 +3,11 @@
 TuneSign utilizes the Spotify API to allow users to sign in using their Spotify account and analyzes their data regarding their listening history, including their most listened to genres.
 
 ## Contributors:
--Jasper Shen
--Benedict Antonious
--Ashley Cody
--Langston Denning
--Lachlan Kotarski
+* Jasper Shen
+* Benedict Antonious
+* Ashley Cody
+* Langston Denning
+* Lachlan Kotarski
 
 ## Technology Stack
 Built with Spotify API, PostgreSQL, HTML and JS.

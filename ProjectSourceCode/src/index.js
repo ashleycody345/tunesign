@@ -19,12 +19,23 @@ app.post('/login', (req, res) => {
 // sample endpoints for db testing
 
 app.get('/dbselect', (req, res) => {
-  res.send('Hello World!');
-})
+  let query = `SELECT * FROM users;`;
+  db.one(query)
+  .then((rows) => {
+    res.send(rows);
+  })
+  .catch((error) => {
+    res.send({message : error});
+  })
+});
 
 app.post('/dbinsert', (req, res) => {
-  res.send('Hello World!');
-})
+  let query = `INSERT INTO users (username, password) VALUES (${req.body.username}, ${req.body.password});`;
+});
+
+app.delete('/dbdelete', (req, res) => {
+  let query = `TRUNCATE users;`;
+});
 
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 

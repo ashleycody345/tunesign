@@ -57,45 +57,49 @@ app.get('/login', (req, res) => {
 
 });
 
+app.post('/login', (req, res) => {
+  
+});
+
 app.get('/loginwithspotify', (req, res) => {
-  res.redirect('https://accounts.spotify.com/authorize?' +
+  try {
+    res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: "code",
       client_id: process.env.CLIENT_ID,
       redirect_uri: redirectURI,
     }));
-})
-
-app.post('/login', (req, res) => {
-  
-})
+  } catch (err) { // Return to home page if failed to login
+    console.log(err);
+    res.redirect("/");
+  }
+});
 
 // Spotify API will call this with stuff 
-app.get('/callback', (req, res) => {
-  let code = req.query.code || null;
-  let state = req.query.state || null;
+app.get('/callback', async (req, res) => {
+  try {
+    let code = req.query.code || null;
 
-  if (state === null) {
-    res.redirect('/#' +
-      querystring.stringify({
-        error: 'state_mismatch'
-      }));
-  } else {
+    const auth = 'Basic ' + (new Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64'));
+    const data = querystring.stringify({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: redirectURI
+    });
+
     // Exchange code for access token
-    let authOptions = {
-      url: 'https://accounts.spotify.com/api/token',
-      form: {
-        code: code,
-        redirect_uri: redirectURI,
-        grant_type: 'authorization_code'
-      },
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + (new Buffer.from(clientID + ':' + clientSecret).toString('base64'))
-      },
-      json: true
-    };
-  }
+    const response = await axios.post("https://accounts.spotify.com/api/token", data, {
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'Authorization': auth
+        }
+      });
+
+    accessToken = response.data.access_token;
+  } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
+    console.log(err);
+    res.redirect("/");
+  } 
 });
 
 
@@ -151,4 +155,4 @@ app.post('/apipost', (req, res) => {
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`)
-})
+});

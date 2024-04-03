@@ -7,7 +7,7 @@ const path = require('path');
 // const bodyParser = require('body-parser');
 // const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
 // const bcrypt = require('bcrypt'); //  To hash passwords
-// const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
+const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
 const querystring = require('querystring');
 const port = 3000;
 
@@ -19,10 +19,6 @@ const hbs = handlebars.create({
 });
 
 const redirectURI = "http://localhost:3000/callback"
-
-// MUST HIDE BEFORE DEPLOYMENT
-const clientID = "80cb40fc4c6f4cc9a7dd6ad33d600cbd";
-const clientSecret = "027cd8c76fc947e7bc7c859b0e8f0b0c"; 
 
 let accessToken = "";
 
@@ -53,7 +49,7 @@ app.get('/loginwithspotify', (req, res) => {
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: "code",
-      client_id: clientID,
+      client_id: process.env.CLIENT_ID,
       redirect_uri: redirectURI,
     }));
 })
@@ -73,6 +69,7 @@ app.get('/callback', (req, res) => {
         error: 'state_mismatch'
       }));
   } else {
+    // Exchange code for access token
     let authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       form: {
@@ -88,6 +85,8 @@ app.get('/callback', (req, res) => {
     };
   }
 });
+
+
 
 // sample endpoints for db testing
 

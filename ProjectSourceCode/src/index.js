@@ -88,7 +88,7 @@ app.get('/callback', (req, res) => {
 
 
 
-// sample endpoints for db testing
+// sample endpoints for db testing 
 
 app.get('/dbselect', (req, res) => {
   let query = `SELECT * FROM users;`;

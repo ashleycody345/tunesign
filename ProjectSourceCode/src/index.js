@@ -3,10 +3,10 @@ const app = express();
 const handlebars = require('express-handlebars');
 // const Handlebars = require('handlebars');
 const path = require('path');
-// const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
-// const bodyParser = require('body-parser');
-// const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
-// const bcrypt = require('bcrypt'); //  To hash passwords
+const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
+const bodyParser = require('body-parser');
+const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
+const bcrypt = require('bcrypt'); //  To hash passwords
 const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
 const querystring = require('querystring');
 const port = 3000;
@@ -17,6 +17,18 @@ const hbs = handlebars.create({
   layoutsDir: __dirname + '/views/layouts',
   partialsDir: __dirname + '/views/partials',
 });
+
+// initialize
+const dbConfig = {
+  host: 'db',
+  port: 5432,
+  database: process.env.POSTGRES_DB,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+};
+
+// Connect to database using the above details
+const db = pgp(dbConfig);
 
 const redirectURI = "http://localhost:3000/callback"
 
@@ -30,7 +42,7 @@ let accessToken = "";
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
-// app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
+app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
 app.use(express.static(__dirname + '/')); // Allow for use of relative paths
 
 
@@ -92,7 +104,7 @@ app.get('/callback', (req, res) => {
 
 app.get('/dbselect', (req, res) => {
   let query = `SELECT * FROM users;`;
-  db.one(query)
+  db.any(query)
   .then((rows) => {
     res.send(rows);
   })
@@ -102,10 +114,10 @@ app.get('/dbselect', (req, res) => {
 });
 
 app.post('/dbinsert', (req, res) => {
-  let query = `INSERT INTO users (username, password) VALUES (${req.body.username}, ${req.body.password});`;
-  db.one(query)
+  let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
+  db.any(query)
   .then((rows) => {
-    res.send(rows);
+    res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
   })
   .catch((error) => {
     res.send({message : error});
@@ -113,10 +125,10 @@ app.post('/dbinsert', (req, res) => {
 });
 
 app.delete('/dbdelete', (req, res) => {
-  let query = `TRUNCATE users;`;
-  db.one(query)
+  let query = `TRUNCATE users CASCADE;`;
+  db.any(query)
   .then((rows) => {
-    res.send(rows);
+    res.send({message : `Data cleared successfully`});
   })
   .catch((error) => {
     res.send({message : error});

@@ -1,0 +1,95 @@
+<style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #f4f4f4;
+      padding-top: 56px; /* padding for navbar */
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh; /* Make body at least height of viewport */
+    }
+
+    nav {
+      background-color: #1DB954 !important; /* Spotify green */
+    }
+
+    nav .navbar-brand {
+      color: white !important;
+      font-weight: bold;
+    }
+
+    nav .navbar-nav .nav-link {
+      color: white !important;
+    }
+
+    nav .navbar-nav .nav-link:hover {
+      color: #9a9292 !important;
+    }
+
+    #self-desc {
+      background-color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      flex: 1; /*to fill remaining space */
+    }
+
+    footer {
+      background-color: #1DB954;
+      color: white;
+      padding: 5px;
+      text-align: center;
+      font-size: 14px;
+      margin-top: auto; /* Push the footer to bottom */
+    }
+
+    footer a {
+      color: white;
+      margin: 0 15px; /*margin between icons */
+    }
+
+    footer p {
+      color: white;
+      margin: 4px 0; /* margin between words and icons */
+    }
+
+    .social-icon {
+      width: 30px;
+      height: auto;
+    }
+
+    .zodiac-sign {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto;
+      display: block;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="row">
+      <div class="col-md-6">
+        <div id="self-desc">
+          <h2>About TuneSign</h2>
+          <p>Welcome to TuneSign! We're passionate about connecting music lovers with their astrological signs. Whether you're a fiery Aries rocking out to heavy metal or a dreamy Pisces drifting away to ambient tunes, TuneSign helps you discover your musical zodiac match.</p>
+          <p>Our algorithm analyzes your music preferences and personality traits to recommend the perfect zodiac sign that resonates with your vibe. Unlock the secrets of the stars through your favorite tunes with TuneSign!</p>
+          <a href="#">Get Started</a>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <img src="../resources/img/zodiac_signs.png" class="zodiac-sign" alt="Zodiac Signs">
+      </div>
+    </div>
+</div>
+
+<footer>
+    <div class="container">
+      <p>Follow us on social media:</p>
+      <a href="https://www.snapchat.com/add/langst_d?share_id=FhwM0bTTQC-4zSBScme4Ww&locale=en_US"><img src="../resources/img/snap.png" alt="Snapchat" class="social-icon"></a>
+      <a href="https://www.instagram.com/langston_denning?igsh=NXFtMHRneTJob3Jt&utm_source=qr"><img src="../resources/img/insta.png" alt="Instagram" class="social-icon"></a>
+      <a href="https://open.spotify.com/user/v5h1l0d5x6gs6fes747kp29fx?si=n9M3Tr67RyWWFvgRqe6y6Q"><img src="../resources/img/spotify.png" alt="Spotify" class="social-icon"></a>
+    </div>
+</footer>

@@ -58,7 +58,7 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  
+
 });
 
 app.get('/loginwithspotify', (req, res) => {

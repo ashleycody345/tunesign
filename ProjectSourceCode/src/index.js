@@ -3,10 +3,10 @@ const app = express();
 const handlebars = require('express-handlebars');
 // const Handlebars = require('handlebars');
 const path = require('path');
-// const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
-// const bodyParser = require('body-parser');
-// const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
-// const bcrypt = require('bcrypt'); //  To hash passwords
+const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
+const bodyParser = require('body-parser');
+const session = require('express-session'); // To set the session object. To store or access session data, use the `req.session`, which is (generally) serialized as JSON by the store.
+const bcrypt = require('bcrypt'); //  To hash passwords
 const axios = require('axios'); // To make HTTP requests from our server. We'll learn more about it in Part C.
 const querystring = require('querystring');
 const port = 3000;
@@ -17,6 +17,18 @@ const hbs = handlebars.create({
   layoutsDir: __dirname + '/views/layouts',
   partialsDir: __dirname + '/views/partials',
 });
+
+// initialize
+const dbConfig = {
+  host: 'db',
+  port: 5432,
+  database: process.env.POSTGRES_DB,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+};
+
+// Connect to database using the above details
+const db = pgp(dbConfig);
 
 const redirectURI = "http://localhost:3000/callback"
 
@@ -30,7 +42,7 @@ let accessToken = "";
 app.engine('hbs', hbs.engine);
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
-// app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
+app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
 app.use(express.static(__dirname + '/')); // Allow for use of relative paths
 
 
@@ -45,54 +57,58 @@ app.get('/login', (req, res) => {
 
 });
 
+app.post('/login', (req, res) => {
+  
+});
+
 app.get('/loginwithspotify', (req, res) => {
-  res.redirect('https://accounts.spotify.com/authorize?' +
+  try {
+    res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: "code",
       client_id: process.env.CLIENT_ID,
       redirect_uri: redirectURI,
     }));
-})
-
-app.post('/login', (req, res) => {
-  
-})
+  } catch (err) { // Return to home page if failed to login
+    console.log(err);
+    res.redirect("/");
+  }
+});
 
 // Spotify API will call this with stuff 
-app.get('/callback', (req, res) => {
-  let code = req.query.code || null;
-  let state = req.query.state || null;
+app.get('/callback', async (req, res) => {
+  try {
+    let code = req.query.code || null;
 
-  if (state === null) {
-    res.redirect('/#' +
-      querystring.stringify({
-        error: 'state_mismatch'
-      }));
-  } else {
+    const auth = 'Basic ' + (new Buffer.from(process.env.CLIENT_ID + ':' + process.env.CLIENT_SECRET).toString('base64'));
+    const data = querystring.stringify({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: redirectURI
+    });
+
     // Exchange code for access token
-    let authOptions = {
-      url: 'https://accounts.spotify.com/api/token',
-      form: {
-        code: code,
-        redirect_uri: redirectURI,
-        grant_type: 'authorization_code'
-      },
-      headers: {
-        'content-type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + (new Buffer.from(clientID + ':' + clientSecret).toString('base64'))
-      },
-      json: true
-    };
-  }
+    const response = await axios.post("https://accounts.spotify.com/api/token", data, {
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'Authorization': auth
+        }
+      });
+
+    accessToken = response.data.access_token;
+  } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
+    console.log(err);
+    res.redirect("/");
+  } 
 });
 
 
 
-// sample endpoints for db testing
+// sample endpoints for db testing 
 
 app.get('/dbselect', (req, res) => {
   let query = `SELECT * FROM users;`;
-  db.one(query)
+  db.any(query)
   .then((rows) => {
     res.send(rows);
   })
@@ -102,10 +118,10 @@ app.get('/dbselect', (req, res) => {
 });
 
 app.post('/dbinsert', (req, res) => {
-  let query = `INSERT INTO users (username, password) VALUES (${req.body.username}, ${req.body.password});`;
-  db.one(query)
+  let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
+  db.any(query)
   .then((rows) => {
-    res.send(rows);
+    res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
   })
   .catch((error) => {
     res.send({message : error});
@@ -113,10 +129,10 @@ app.post('/dbinsert', (req, res) => {
 });
 
 app.delete('/dbdelete', (req, res) => {
-  let query = `TRUNCATE users;`;
-  db.one(query)
+  let query = `TRUNCATE users CASCADE;`;
+  db.any(query)
   .then((rows) => {
-    res.send(rows);
+    res.send({message : `Data cleared successfully`});
   })
   .catch((error) => {
     res.send({message : error});
@@ -145,4 +161,4 @@ app.get('/home', (req, res) => {
 
 app.listen(port, () => {
   console.log(`App listening on port ${port}`)
-})
+});

@@ -149,7 +149,13 @@ app.post('/apipost', (req, res) => {
   res.send('Hello World!');
 })
 
+// Adjust the path to the views directory
+app.set('views', path.join(__dirname, 'views', 'pages'));
 
+// Route for loading the home page
+app.get('/home', (req, res) => {
+  res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
+});
 
 // open on port 3000
 

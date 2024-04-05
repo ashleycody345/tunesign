@@ -20,7 +20,7 @@ const hbs = handlebars.create({
 
 // initialize
 const dbConfig = {
-  host: 'db',
+  host: 'db', 
   port: 5432,
   database: process.env.POSTGRES_DB,
   user: process.env.POSTGRES_USER,
@@ -53,12 +53,53 @@ app.get('/', (req, res) => {
   res.redirect('login')
 });
 
+app.get('/welcome', (req, res) => {
+  res.json({status: 'success', message: 'Welcome!'});
+});
+
+// Render register page
+app.get("/register", (req, res) => {
+  res.render("pages/register");
+});
+
+// Register
+app.post('/register', (req, res) => {
+  // To-DO: Insert username and hashed password into the 'users' table
+  // try {
+  //   // hash the password using bcrypt library
+  //   const hash = await bcrypt.hash(req.body.password, 10);
+  //   const username = req.body.username;
+
+  //   // Add user to database
+  //   await db.any(`INSERT INTO users (id, username, password) VALUES (${req.body.id}, '${username}', '${hash}');`);
+    
+  //   res.redirect("/login");
+  // } catch (err) {
+  //   res.render("pages/register");
+  // }
+
+  // template for passing positive test
+  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
+    let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
+    db.any(query)
+    .then((rows) => {
+        res.status(200);
+        res.send({message : `User credentials entered: ${req.body.username}, ${req.body.password}`})
+    });
+  }
+  else{
+    res.status(400);
+    res.send({message : 'ERROR: credentials in incorrect format'});
+  }
+  
+});
+
 app.get('/login', (req, res) => {
   res.render("login")
 });
 
 app.post('/login', (req, res) => {
-  
+
 });
 
 app.get('/home', (req, res) => {
@@ -177,6 +218,6 @@ app.get('/home', (req, res) => {
 
 // open on port 3000
 
-app.listen(port, () => {
+module.exports = app.listen(port, () => {
   console.log(`App listening on port ${port}`)
 });

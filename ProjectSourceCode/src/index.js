@@ -50,16 +50,33 @@ app.use(express.static(__dirname + '/')); // Allow for use of relative paths
 // Endpoints for default behavior (use this for login procedure for now)
 
 app.get('/', (req, res) => {
-
+  res.redirect('login')
 });
 
 app.get('/login', (req, res) => {
-
+  res.render("login")
 });
 
 app.post('/login', (req, res) => {
   
 });
+
+app.get('/home', (req, res) => {
+  res.render("home")
+});
+
+app.post('/home', (req, res) => {
+  
+});
+
+app.get('/about', (req, res) => {
+  res.render("about")
+});
+
+app.post('/about', (req, res) => {
+  
+});
+
 
 app.get('/loginwithspotify', (req, res) => {
   try {
@@ -96,6 +113,7 @@ app.get('/callback', async (req, res) => {
       });
 
     accessToken = response.data.access_token;
+    res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
     res.redirect("/");

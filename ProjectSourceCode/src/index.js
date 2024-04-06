@@ -163,7 +163,10 @@ app.get('/callback', async (req, res) => {
 
 
 
-// sample endpoints for db testing 
+
+
+// WARNING: these endpoints are only for use in testing tunesign_db. 
+// DO NOT use these elsewhere in development, and REMOVE these before publishing!!!
 
 app.get('/dbselect', (req, res) => {
   let query = `SELECT * FROM users;`;
@@ -197,6 +200,8 @@ app.delete('/dbdelete', (req, res) => {
     res.send({message : error});
   })
 });
+
+// end of tunesign_db test endpoibts
 
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 

@@ -24,7 +24,7 @@ INSERT INTO genres (genreName, topzodiac, secondzodiac) VALUES
 ('Classical', 'Virgo', 'Capricorn'),
 ('R&B', 'Cancer', 'Taurus'),
 ('Punk', 'Aries', 'Aquarius'),
-('Alternative', 'Alternative', 'Libra'),
+('Alternative', 'Sagittarius', 'Libra'),
 ('Folk', 'Cancer', 'Scorpio'),
 ('TV & Films', 'Gemini', 'Sagittarius'),
 ('Chill', 'Pisces', 'Libra'),

@@ -80,12 +80,23 @@ app.post('/register', (req, res) => {
 
   // template for passing positive test
   if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
-    let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
-    db.any(query)
-    .then((rows) => {
-        res.status(200);
-        res.send({message : `User credentials entered: ${req.body.username}, ${req.body.password}`})
-    });
+    // let query = `SELECT username FROM users WHERE '${req.body.username}' = username;`;
+    // db.one(query)
+    // .then((rows_search) => {
+    //   if(Object.keys(rows_search) === 0){
+        let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
+        db.any(query)
+        .then((rows) => {
+            res.status(200);
+            res.send({message : `User credentials entered or found: ${req.body.username}, ${req.body.password}`})
+        });
+      // }
+      // else{
+      //   res.status(200);
+      //   res.send({message : `User credentials entered or found: ${req.body.username}, ${req.body.password}`});
+      // }
+    // })
+      
   }
   else{
     res.status(400);
@@ -201,7 +212,36 @@ app.delete('/dbdelete', (req, res) => {
   })
 });
 
+
+app.get('/dbreadgenres', (req, res) => {
+  let query = `SELECT * FROM genres;`;
+  db.any(query)
+  .then((rows) => {
+    res.send(rows);
+  })
+  .catch((error) => {
+    res.send({message : error});
+  })
+});
+
+app.get('/dbreadzodiacs', (req, res) => {
+  let query = `SELECT * FROM zodiacs;`;
+  db.any(query)
+  .then((rows) => {
+    res.send(rows);
+  })
+  .catch((error) => {
+    res.send({message : error});
+  })
+});
 // end of tunesign_db test endpoibts
+
+
+
+
+
+
+
 
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 

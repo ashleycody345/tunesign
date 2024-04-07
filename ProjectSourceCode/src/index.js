@@ -155,7 +155,9 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/home', (req, res) => {
-  res.render("home");
+  res.render("home", {
+    user: req.session.user
+  });
 });
 
 app.post('/home', (req, res) => {
@@ -163,17 +165,23 @@ app.post('/home', (req, res) => {
 });
 
 app.get('/about', (req, res) => {
-  res.render("about");
+  res.render("about", {
+    user: req.session.user
+  });
 });
 
 app.post('/about', (req, res) => {
   
 });
 
+app.get("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect("home");
+});
+
 
 
 // Spotify API Interactions
-
 
 app.get('/loginwithspotify', (req, res) => {
   try {

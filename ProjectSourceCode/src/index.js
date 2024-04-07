@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const handlebars = require('express-handlebars');
-// const Handlebars = require('handlebars');
+const Handlebars = require('handlebars');
 const path = require('path');
 const pgp = require('pg-promise')(); // To connect to the Postgres DB from the node server
 const bodyParser = require('body-parser');
@@ -45,12 +45,25 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json()); // specify the usage of JSON for parsing request body.
 app.use(express.static(__dirname + '/')); // Allow for use of relative paths
 
+// initialize session variables
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    saveUninitialized: false,
+    resave: false,
+  })
+);
 
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
 
 // Endpoints for default behavior (use this for login procedure for now)
 
 app.get('/', (req, res) => {
-  res.redirect('login')
+  res.redirect('home');
 });
 
 app.get('/welcome', (req, res) => {
@@ -59,51 +72,92 @@ app.get('/welcome', (req, res) => {
 
 // Render register page
 app.get("/register", (req, res) => {
-  res.render("pages/register");
+  if (req.session.user != null) { // Go to home page if logged in
+    res.redirect("/home");
+  }
+
+  res.render("register");
 });
 
 // Register
-app.post('/register', (req, res) => {
-  // To-DO: Insert username and hashed password into the 'users' table
-  // try {
-  //   // hash the password using bcrypt library
-  //   const hash = await bcrypt.hash(req.body.password, 10);
-  //   const username = req.body.username;
+app.post('/register', async (req, res) => {
+  // Testing Code
+  // if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
+  //   const encryptedPassword = await bcrypt.hash(req.body.password, 10);
 
-  //   // Add user to database
-  //   await db.any(`INSERT INTO users (id, username, password) VALUES (${req.body.id}, '${username}', '${hash}');`);
-    
-  //   res.redirect("/login");
-  // } catch (err) {
-  //   res.render("pages/register");
+  //   let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${encryptedPassword}');`;
+  //   db.any(query)
+  //   .then((rows) => {
+  //       res.status(200);
+  //       res.send({message : `User credentials entered: ${req.body.username}, ${encryptedPassword}`})
+  //       res.redirect("/login");
+  //   });
+  // }
+  // else{
+  //   res.status(400);
+  //   res.send({message : 'ERROR: credentials in incorrect format'});
+  //   res.render("register");
   // }
 
-  // template for passing positive test
-  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
-    let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
-    db.any(query)
-    .then((rows) => {
-        res.status(200);
-        res.send({message : `User credentials entered: ${req.body.username}, ${req.body.password}`})
-    });
-  }
-  else{
+  // Code without sending a message
+  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string') {
+    try {
+      const encryptedPassword = await bcrypt.hash(req.body.password, 10);
+
+      let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${encryptedPassword}');`;
+      db.any(query)
+      .then((rows) => {
+          res.status(200);
+          res.redirect("/login");
+      });
+    } catch (err) {
+      res.status(400);
+      res.render("register");
+    }
+  } else {
     res.status(400);
-    res.send({message : 'ERROR: credentials in incorrect format'});
+    res.render("register");
   }
-  
 });
 
 app.get('/login', (req, res) => {
-  res.render("login")
+  if (req.session.user != null) { // Go to home page if logged in
+    res.redirect("/home");
+  }
+
+  res.render("login");
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+  try {
+    user = await db.one(`SELECT * FROM users WHERE username = '${req.body.username}'`);
 
+    // Check password match
+    const match = bcrypt.compare(req.body.password, user.password);
+
+    if (match) {
+      req.session.user = user;
+      req.session.save();
+      res.redirect("/home");
+    } else {
+      res.render("login", {
+        error: true,
+        message: "Incorrect Username or Password"
+      });
+    }
+  } catch (err) {
+    res.status(400);
+    res.redirect("login", {
+      error: true,
+      message: "ERROR: Login failed"
+    });
+  }
 });
 
 app.get('/home', (req, res) => {
-  res.render("home")
+  res.render("home", {
+    user: req.session.user
+  });
 });
 
 app.post('/home', (req, res) => {
@@ -111,13 +165,23 @@ app.post('/home', (req, res) => {
 });
 
 app.get('/about', (req, res) => {
-  res.render("about")
+  res.render("about", {
+    user: req.session.user
+  });
 });
 
 app.post('/about', (req, res) => {
   
 });
 
+app.get("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect("home");
+});
+
+
+
+// Spotify API Interactions
 
 app.get('/loginwithspotify', (req, res) => {
   try {

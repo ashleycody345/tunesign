@@ -176,6 +176,7 @@ app.post('/about', (req, res) => {
 
 app.get("/logout", (req, res) => {
   req.session.destroy();
+  accessToken = null;
   res.redirect("home");
 });
 

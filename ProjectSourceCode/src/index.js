@@ -76,20 +76,42 @@ app.get("/register", (req, res) => {
 });
 
 // Register
-app.post('/register', (req, res) => {
-  // template for passing positive test
-  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
-    let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
-    db.any(query)
-    .then((rows) => {
-        res.status(200);
-        res.send({message : `User credentials entered: ${req.body.username}, ${req.body.password}`})
-        res.redirect("/login");
-    });
-  }
-  else{
+app.post('/register', async (req, res) => {
+  // Testing Code
+  // if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
+  //   const encryptedPassword = await bcrypt.hash(req.body.password, 10);
+
+  //   let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${encryptedPassword}');`;
+  //   db.any(query)
+  //   .then((rows) => {
+  //       res.status(200);
+  //       res.send({message : `User credentials entered: ${req.body.username}, ${encryptedPassword}`})
+  //       res.redirect("/login");
+  //   });
+  // }
+  // else{
+  //   res.status(400);
+  //   res.send({message : 'ERROR: credentials in incorrect format'});
+  //   res.render("register");
+  // }
+
+  // Code without sending a message
+  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string') {
+    try {
+      const encryptedPassword = await bcrypt.hash(req.body.password, 10);
+
+      let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${encryptedPassword}');`;
+      db.any(query)
+      .then((rows) => {
+          res.status(200);
+          res.redirect("/login");
+      });
+    } catch (err) {
+      res.status(400);
+      res.render("register");
+    }
+  } else {
     res.status(400);
-    res.send({message : 'ERROR: credentials in incorrect format'});
     res.render("register");
   }
 });
@@ -98,8 +120,31 @@ app.get('/login', (req, res) => {
   res.render("login");
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+  try {
+    user = await db.one(`SELECT * FROM users WHERE username = ${req.body.username}`);
 
+    // Check password match
+    const match = bcrypt.compare(req.body.password, user.password);
+
+    if (match) {
+      req.session.user = user;
+      req.session.save();
+      res.redirect("/home");
+    } else {
+      res.render("login", {
+        error: true,
+        message: "Incorrect Username or Password"
+      }
+    );
+    }
+  } catch (err) {
+    res.status(400);
+    res.redirect("login", {
+      error: true,
+      message: "ERROR: Login failed"
+    });
+  }
 });
 
 app.get('/home', (req, res) => {

@@ -72,6 +72,10 @@ app.get('/welcome', (req, res) => {
 
 // Render register page
 app.get("/register", (req, res) => {
+  if (req.session.user != null) { // Go to home page if logged in
+    res.redirect("/home");
+  }
+
   res.render("register");
 });
 
@@ -117,12 +121,16 @@ app.post('/register', async (req, res) => {
 });
 
 app.get('/login', (req, res) => {
+  if (req.session.user != null) { // Go to home page if logged in
+    res.redirect("/home");
+  }
+
   res.render("login");
 });
 
 app.post('/login', async (req, res) => {
   try {
-    user = await db.one(`SELECT * FROM users WHERE username = ${req.body.username}`);
+    user = await db.one(`SELECT * FROM users WHERE username = '${req.body.username}'`);
 
     // Check password match
     const match = bcrypt.compare(req.body.password, user.password);
@@ -135,8 +143,7 @@ app.post('/login', async (req, res) => {
       res.render("login", {
         error: true,
         message: "Incorrect Username or Password"
-      }
-    );
+      });
     }
   } catch (err) {
     res.status(400);

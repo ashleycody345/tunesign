@@ -45,7 +45,7 @@ describe('Testing Register API', () => {
         .send({username: 'John Doe', password: 'testpassword'})
         .end((err, res) => {
           expect(res).to.have.status(200);
-          expect(res.body.message).to.equals(`User credentials entered: John Doe, testpassword`);
+          expect(res.body.message).to.equals(`User credentials entered: John Doe`);
           done();
         });
     });

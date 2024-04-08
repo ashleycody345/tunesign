@@ -92,7 +92,6 @@ app.post('/register', async (req, res) => {
       db.any(query)
       .then((rows) => {
           res.status(302);
-          // res.send({message : `User credentials entered: ${req.body.username}`})
           res.redirect("/login");
       });
     } catch (err) {
@@ -102,7 +101,6 @@ app.post('/register', async (req, res) => {
   }
   else{
     res.status(400);
-    // res.send({message : 'ERROR: credentials in incorrect format'});
     res.render("register");
   }
 });

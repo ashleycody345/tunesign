@@ -1,6 +1,6 @@
 ## What's Changed
 * Made docker-compose.yaml working by @Lachlankotarski in https://github.com/ashleycody345/tunesign/pull/15
-* Made Genre->zodiac.pdf spreadsheet that helped with database creation in https://github](https://github.com/ashleycody345/tunesign/pull/36
+* Made Genre->zodiac.pdf spreadsheet that helped with database creation in https://github.com/ashleycody345/tunesign/pull/36
 * Merge database creation with index.js by @ashleycody345 in https://github.com/ashleycody345/tunesign/pull/17
 * Merge database tests with Spotify login JS files by @ashleycody345 in https://github.com/ashleycody345/tunesign/pull/19
 * Jasper/login with spotify by @jash3852 in https://github.com/ashleycody345/tunesign/pull/21

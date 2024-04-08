@@ -219,13 +219,35 @@ app.get('/callback', async (req, res) => {
         }
       });
 
-    accessToken = response.data.access_token;
+    req.session.accessToken = response.data.access_token;
     res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
     res.redirect("/");
   } 
 });
+
+//
+function doThings() {
+  let a = getTopTracks(req);
+}
+
+async function getTopTracks(req){
+  let temp = (await fetchWebApi(req, 'v1/me/top/tracks?time_range=long_term&limit=100', 'GET')).items
+  console.log(temp);
+  return temp;
+}
+
+async function fetchWebApi(req, endpoint, method, body) {
+  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
+    headers: {
+      Authorization: `Bearer ${req.session.accessToken}`,
+    },
+    method,
+    body:JSON.stringify(body)
+  });
+  return await res.json();
+}
 
 
 

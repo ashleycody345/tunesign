@@ -155,12 +155,26 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/home', (req, res) => {
-  res.render("home", {
+  // Check if user is logged in
+  if (req.session.user) {
+    res.render('home', { title: 'Home Page', user: req.session.user });
+  } else {
+    // If user is not logged in, redirect to the about page
+    res.redirect('/about');
+  }
+});
+
+app.post('/home', (req, res) => {
+  
+});
+
+app.get('/homeNotLinkedToSpotify', (req, res) => {
+  res.render("homeNotLinkedToSpotify", {
     user: req.session.user
   });
 });
 
-app.post('/home', (req, res) => {
+app.post('/homeNotLinkedToSpotify', (req, res) => {
   
 });
 

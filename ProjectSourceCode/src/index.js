@@ -63,7 +63,7 @@ app.use(
 // Endpoints for default behavior (use this for login procedure for now)
 
 app.get('/', (req, res) => {
-  res.redirect('home');
+  res.redirect('about');
 });
 
 
@@ -135,7 +135,7 @@ app.post('/login', async (req, res) => {
     }
   } catch (err) {
     res.status(400);
-    res.redirect("login", {
+    res.render("login", {
       error: true,
       message: "ERROR: Login failed"
     });

@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users
 (
     username VARCHAR(50) PRIMARY KEY,
-    password VARCHAR(50) NOT NULL,
+    password VARCHAR(60) NOT NULL,
     zodiac VARCHAR(20) REFERENCES zodiacs(zodiac)
 );
 

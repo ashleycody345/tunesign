@@ -45,14 +45,13 @@ describe('Testing Register API', () => {
   // Result: This test case should pass and return a status 200 along with redirecting to the login endpoint.
   // Explanation: The testcase will call the /register API with the following input
   // and expects the API to return a status of 200 along with redirecting to the login endpoint
-  it('positive : /register', done => {
+  it('Positive : /register', done => {
     chai
       .request(server)
       .post('/register')
       .send({username: 'John Doe', password: 'testpassword'})
       .end((err, res) => {
         expect(res).to.have.status(200);
-        // expect(res.body.message).to.equals(`User credentials entered: John Doe`);
         expect(res).to.redirectTo(/^.*127\.0\.0\.1.*\/login$/); // Checks for 127.0.0.1.(something)/login redirect
         done();
       });
@@ -61,7 +60,7 @@ describe('Testing Register API', () => {
   // Negative Testcase :
   // API: /register
   // Input: {username: 10, password: 23}
-  // Expect: res.status == 400 and res.should.have.html
+  // Expect: res.status == 400 and res.should.have.html == true
   // Result: This test case should pass and return a status 400 along with rendering the register page again.
   // Explanation: The testcase will call the /register API with the following invalid inputs
   // and expects the API to return a status of 400 along with rendering the register page again.
@@ -72,8 +71,7 @@ describe('Testing Register API', () => {
       .send({username: 10, password: 23})
       .end((err, res) => {
         expect(res).to.have.status(400);
-        expect(res).to.be.html;
-        // expect(res.body.message).to.equals('ERROR: credentials in incorrect format');
+        expect(res).to.be.html; // Should have rendered register page again
         done();
       });
   });
@@ -81,6 +79,43 @@ describe('Testing Register API', () => {
 
 // *********************************** PART C *************************************
 
-// describe()
+describe('Testing Login API', () => {
+  // Positive Testcase :
+  // API: /login
+  // Input: {username: 'John Doe', password: 'testpassword'}
+  // Expect: res.status == 200 and res.to.redirectTo(/^.*127\.0\.0\.1.*\/home$/)
+  // Result: This test case should pass and return a status 200 along with redirecting to the home endpoint.
+  // Explanation: The testcase will call the /login API with the following input
+  // and expects the API to return a status of 200 along with redirecting to the home endpoint
+  it('Positive : /login', done => {
+    chai
+      .request(server)
+      .post('/login')
+      .send({username: 'John Doe', password: 'testpassword'})
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res).to.redirectTo(/^.*127\.0\.0\.1.*\/home$/); // Checks for 127.0.0.1.(something)/home redirect
+        done();
+      });
+  });
 
+  // Negative Testcase :
+  // API: /login
+  // Input: {username: 10, password: 23}
+  // Expect: res.status == 400 and res.should.have.html == true
+  // Result: This test case should pass and return a status 400 along with rendering the login page again.
+  // Explanation: The testcase will call the /login API with the following invalid inputs
+  // and expects the API to return a status of 400 along with rendering the login page again.
+  it('Negative : /login. Checking nonexistent user login', done => {
+    chai
+      .request(server)
+      .post('/login')
+      .send({username: 10, password: 23})
+      .end((err, res) => {
+        expect(res).to.have.status(400);
+        expect(res).to.be.html; // Should have rendered login page again
+        done();
+      });
+  });
+});
 // ********************************************************************************

@@ -1,0 +1,67 @@
+<style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #f4f4f4;
+      padding-top: 10vh; /* padding for navbar */
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh; /* Make body at least height of viewport */
+    }
+
+    #self-desc {
+      max-width: 50%;
+      max-height: 90vh;
+      margin: 0 auto;
+      background-color: #ffffff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: row;
+    }
+
+    .text {
+      flex: 1;
+      padding-right: 20px;
+      font-size: 18px;
+    }
+
+    .btn {
+    background-color: #1DB954;
+    color: black;
+    padding: 10px 15px;
+    border: none;
+    display: flex;
+    max-width: 250px;
+    align-items: center;
+    font-size: 18.5px;
+    font-weight: 530;
+}
+
+.btn:hover {
+    background-color: #169e4d; /* Darker shade of green on hover */
+    color: black;
+}
+
+.spotify-icon {
+    max-height: 30px;
+    margin-right: 10px; /* Adjust as needed */
+}
+</style>
+
+<div id="self-desc">
+    <div class="text">
+        <h2>Unlock Your Zodiac Insight!</h2>
+        <p>Discover your musical zodiac sign! Connect your Spotify account to unlock personalized insights and recommendations tailored just for you.</p>
+        {{!-- !!!! IMPORNTANT, this is temporary, we need to put in the actual connect to spotify link !!!! --}}
+        <a href="/loginwithspotify" class="btn btn-primary">
+            <img src="../../resources/img/spotify.png" alt="Spotify Icon" class="spotify-icon">
+            Connect with Spotify
+        </a>
+    </div>
+</div>
+

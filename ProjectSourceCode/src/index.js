@@ -66,6 +66,9 @@ app.get('/', (req, res) => {
   res.redirect('home');
 });
 
+
+
+// Lab 11 Stuff
 app.get('/welcome', (req, res) => {
   res.json({status: 'success', message: 'Welcome!'});
 });
@@ -81,44 +84,31 @@ app.get("/register", (req, res) => {
 
 // Register
 app.post('/register', async (req, res) => {
-  // Testing Code
-  // if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
-  //   const encryptedPassword = await bcrypt.hash(req.body.password, 10);
-
-  //   let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${encryptedPassword}');`;
-  //   db.any(query)
-  //   .then((rows) => {
-  //       res.status(200);
-  //       res.send({message : `User credentials entered: ${req.body.username}, ${encryptedPassword}`})
-  //       res.redirect("/login");
-  //   });
-  // }
-  // else{
-  //   res.status(400);
-  //   res.send({message : 'ERROR: credentials in incorrect format'});
-  //   res.render("register");
-  // }
-
-  // Code without sending a message
-  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string') {
+  if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
     try {
       const encryptedPassword = await bcrypt.hash(req.body.password, 10);
 
       let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${encryptedPassword}');`;
       db.any(query)
       .then((rows) => {
-          res.status(200);
+          res.status(302);
+          // res.send({message : `User credentials entered: ${req.body.username}`})
           res.redirect("/login");
       });
     } catch (err) {
       res.status(400);
       res.render("register");
     }
-  } else {
+  }
+  else{
     res.status(400);
+    // res.send({message : 'ERROR: credentials in incorrect format'});
     res.render("register");
   }
 });
+// End Lab 11 Stuff
+
+
 
 app.get('/login', (req, res) => {
   if (req.session.user != null) { // Go to home page if logged in
@@ -183,7 +173,6 @@ app.get("/logout", (req, res) => {
 
 
 // Spotify API Interactions
-
 app.get('/loginwithspotify', (req, res) => {
   try {
     res.redirect('https://accounts.spotify.com/authorize?' +

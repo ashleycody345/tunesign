@@ -149,8 +149,8 @@ app.get('/home', (req, res) => {
   if (req.session.user) {
     res.render('home', { title: 'Home Page', user: req.session.user });
   } else {
-    // If user is not logged in, redirect to the about page
-    res.redirect('/about');
+    // If user is not logged in, redirect to the login with Spotify page
+    res.redirect('/homeNotLinkedToSpotify');
   }
 });
 
@@ -159,9 +159,14 @@ app.post('/home', (req, res) => {
 });
 
 app.get('/homeNotLinkedToSpotify', (req, res) => {
-  res.render("homeNotLinkedToSpotify", {
-    user: req.session.user
-  });
+  if (req.session.user) {
+    res.render("homeNotLinkedToSpotify", {
+      user: req.session.user
+    });
+  } else {
+    // Redirect to about page if user is not logged in
+    res.redirect("/about");
+  }
 });
 
 app.post('/homeNotLinkedToSpotify', (req, res) => {

@@ -38,30 +38,49 @@ describe('Server!', () => {
 // and expects the API to return a status of 200 along with the "Success" message.
 
 describe('Testing Register API', () => {
-    it('positive : /register', done => {
-      chai
-        .request(server)
-        .post('/register')
-        .send({username: 'John Doe', password: 'testpassword'})
-        .end((err, res) => {
-          expect(res).to.have.status(200);
-          expect(res.body.message).to.equals(`User credentials entered: John Doe`);
-          done();
-        });
-    });
-    it('Negative : /register. Checking invalid id', done => {
-        chai
-        .request(server)
-        .post('/register')
-        .send({username: 10, password: 23})
-        .end((err, res) => {
-            expect(res).to.have.status(400);
-            expect(res.body.message).to.equals('ERROR: credentials in incorrect format');
-            done();
-        });
-    });
+  // Positive Testcase :
+  // API: /register
+  // Input: {username: 'John Doe', password: 'testpassword'}
+  // Expect: res.status == 200 and res.to.redirectTo(/^.*127\.0\.0\.1.*\/login$/)
+  // Result: This test case should pass and return a status 200 along with redirecting to the login endpoint.
+  // Explanation: The testcase will call the /register API with the following input
+  // and expects the API to return a status of 200 along with redirecting to the login endpoint
+  it('positive : /register', done => {
+    chai
+      .request(server)
+      .post('/register')
+      .send({username: 'John Doe', password: 'testpassword'})
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        // expect(res.body.message).to.equals(`User credentials entered: John Doe`);
+        expect(res).to.redirectTo(/^.*127\.0\.0\.1.*\/login$/); // Checks for 127.0.0.1.(something)/login redirect
+        done();
+      });
   });
 
+  // Negative Testcase :
+  // API: /register
+  // Input: {username: 10, password: 23}
+  // Expect: res.status == 400 and res.should.have.html
+  // Result: This test case should pass and return a status 400 along with rendering the register page again.
+  // Explanation: The testcase will call the /register API with the following invalid inputs
+  // and expects the API to return a status of 400 along with rendering the register page again.
+  it('Negative : /register. Checking invalid entries', done => {
+    chai
+      .request(server)
+      .post('/register')
+      .send({username: 10, password: 23})
+      .end((err, res) => {
+        expect(res).to.have.status(400);
+        expect(res).to.be.html;
+        // expect(res.body.message).to.equals('ERROR: credentials in incorrect format');
+        done();
+      });
+  });
+});
 
+// *********************************** PART C *************************************
+
+// describe()
 
 // ********************************************************************************

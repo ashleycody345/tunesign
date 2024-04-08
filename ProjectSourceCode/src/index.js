@@ -85,6 +85,7 @@ app.get("/register", (req, res) => {
 // Register
 app.post('/register', async (req, res) => {
   if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
+
     try {
       const encryptedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -98,6 +99,7 @@ app.post('/register', async (req, res) => {
       res.status(400);
       res.render("register");
     }
+
   }
   else{
     res.status(400);
@@ -229,7 +231,10 @@ app.get('/callback', async (req, res) => {
 
 
 
-// sample endpoints for db testing 
+
+
+// WARNING: these endpoints are only for use in testing tunesign_db. 
+// DO NOT use these elsewhere in development, and REMOVE these before publishing!!!
 
 app.get('/dbselect', (req, res) => {
   let query = `SELECT * FROM users;`;
@@ -263,6 +268,37 @@ app.delete('/dbdelete', (req, res) => {
     res.send({message : error});
   })
 });
+
+
+app.get('/dbreadgenres', (req, res) => {
+  let query = `SELECT * FROM genres;`;
+  db.any(query)
+  .then((rows) => {
+    res.send(rows);
+  })
+  .catch((error) => {
+    res.send({message : error});
+  })
+});
+
+app.get('/dbreadzodiacs', (req, res) => {
+  let query = `SELECT * FROM zodiacs;`;
+  db.any(query)
+  .then((rows) => {
+    res.send(rows);
+  })
+  .catch((error) => {
+    res.send({message : error});
+  })
+});
+// end of tunesign_db test endpoibts
+
+
+
+
+
+
+
 
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 

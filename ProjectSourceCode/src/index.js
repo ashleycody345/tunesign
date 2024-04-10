@@ -30,10 +30,11 @@ const dbConfig = {
 // Connect to database using the above details
 const db = pgp(dbConfig);
 
-const redirectURI = "http://localhost:3000/callback"
+const redirectURI = "http://localhost:3000/callback";
 
 let accessToken = "";
 
+let data;
 
 
 // Initializing the App
@@ -185,13 +186,15 @@ app.get("/logout", (req, res) => {
 
 
 // Spotify API Interactions
+// Authentication
 app.get('/loginwithspotify', (req, res) => {
   try {
     res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: "code",
       client_id: process.env.CLIENT_ID,
-      redirect_uri: redirectURI,
+      scope: "playlist-read-private playlist-read-collaborative user-top-read user-library-read",
+      redirect_uri: redirectURI
     }));
   } catch (err) { // Return to home page if failed to login
     console.log(err);
@@ -219,7 +222,8 @@ app.get('/callback', async (req, res) => {
         }
       });
 
-    req.session.accessToken = response.data.access_token;
+    accessToken = response.data.access_token;
+    console.log(accessToken);
     res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
@@ -227,27 +231,29 @@ app.get('/callback', async (req, res) => {
   } 
 });
 
-//
-function doThings() {
-  let a = getTopTracks(req);
-}
-
-async function getTopTracks(req){
-  let temp = (await fetchWebApi(req, 'v1/me/top/tracks?time_range=long_term&limit=100', 'GET')).items
-  console.log(temp);
-  return temp;
-}
-
-async function fetchWebApi(req, endpoint, method, body) {
+// Helper Functions for /getTop5Tracks
+async function fetchWebApi(endpoint, method, body) {
   const res = await fetch(`https://api.spotify.com/${endpoint}`, {
     headers: {
-      Authorization: `Bearer ${req.session.accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
     method,
     body:JSON.stringify(body)
   });
   return await res.json();
 }
+
+async function getTopTracks(){
+  return (await fetchWebApi(
+    'v1/me/top/tracks?time_range=long_term&limit=5', 'GET'
+  )).items;
+}
+
+app.get("/getTop5Tracks", async (req, res) => {
+  const topTracks = await getTopTracks();
+  data = topTracks;
+  res.redirect("/about");
+});
 
 
 

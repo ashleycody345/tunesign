@@ -236,6 +236,47 @@ app.get('/callback', async (req, res) => {
 
 
 
+function calculateZodiac() {
+  // Initialize scores
+  let zodiacScores = {
+    "Capricorn": 0,
+    "Aquarius": 0,
+    "Pisces": 0,
+    "Aries": 0,
+    "Taurus": 0,
+    "Gemini": 0,
+    "Cancer": 0,
+    "Leo": 0,
+    "Virgo": 0,
+    "Libra": 0,
+    "Scorpio": 0,
+    "Sagittarius": 0
+  }
+
+  // Tally up scores (Needs to read top genres and map to zodiac to get points)
+
+  // Tie breaker (random number generator lol?)
+  // Get largest score
+  let greatestScore = 0;
+  for (let zodiac in zodiacScores) {
+    if (zodiacScores[zodiac] > greatestScore) {
+      greatestScore = zodiacScores[zodiac];
+    }
+  }
+
+  // Get array of zodiacs with the highest score
+  let greatestScoreZodiacs = [];
+  for (let zodiac in zodiacScores) {
+    if (zodiacScores[zodiac] == greatestScore) {
+      greatestScoreZodiacs.push(zodiac);
+    }
+  }
+
+  let zodiacCount = greatestScoreZodiacs.length;
+  return greatestScoreZodiacs[Math.random(zodiacCount)];
+}
+
+
 
 
 // WARNING: these endpoints are only for use in testing tunesign_db. 

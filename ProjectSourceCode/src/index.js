@@ -63,14 +63,55 @@ app.use(
 
 // functions to query from db
 
-// returns query to select all genres and scores for a particular user
+/**  returns query to select all genres and scores for a particular user
+ // columns: rows.username, rows.genreName, rows.usergenrescore */
 function dbSelectUserGenres(username){
   return `SELECT username, genreName, usergenrescore FROM users_to_genres WHERE username = '${username}';`;
 }
 
-// returns query to retrieve one row with only the hashed password associated with username
+/** 
+ * returns query to retrieve one row with only the hashed password associated with username
+ * // columns: rows.password */
 function dbRetrieveHashedPassword(username){
   return `SELECT password FROM users WHERE username = '${username}' LIMIT 1;`;
+}
+/**
+// returns query to push a user with a genre and a score
+// columns: none
+*/
+function dbInsertUserGenre(username, genreName, score){
+  return `INSERT INTO users_to_genres (username, genreName, usergenrescore) VALUES ('${username}', '${genreName}', ${score});`;
+}
+/**
+// returns query to insert genre
+// columns: none
+*/
+function dbInsertGenre(genreName, topzodiac, secondzodiac){
+  return `INSERT INTO genres (genreName, topzodiac, secondzodiac) VALUES ('${genreName}', '${topzodiac}', '${secondzodiac}');`;
+}
+
+/**
+// returns query to assign existing user a zodiac
+// columns: none
+*/
+function dbAddUserZodiac(username, zodiac){
+  return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}';`;
+}
+
+/**
+// returns a user's zodiac and description
+// columns: rows.user, rows.zodiac, rows.desc
+*/
+function dbRetrieveUserZodiac(username){
+  return `SELECT u.username AS user, z.zodiac AS zodiac, z.description AS desc FROM zodiac z, users u WHERE u.username = '${username}' AND u.zodiac = z.zodiac`;
+}
+
+/**
+// returns a genre's zodiac and description
+// columns: rows.zodiac, rows.desc, two rows returned (rows[0], rows[1])
+*/
+function dbRetrieveGenreZodiacs(genreName){
+  return `SELECT z.zodiac AS zodiac, z.description AS desc FROM zodiacs z, genres g WHERE g.genreName = '${genreName}' AND (z.zodiac = g.topzodiac OR z.zodiac = g.secondzodiac);`;
 }
 
 
@@ -274,8 +315,7 @@ app.get("/getTop5Tracks", async (req, res) => {
 // sample endpoints for db testing 
 
 app.get('/dbselect', (req, res) => {
-  let query = `SELECT * FROM users;`;
-  db.any(query)
+  db.any(dbRetrieveGenreZodiacs('Pop'))
   .then((rows) => {
     res.send(rows);
   })
@@ -284,27 +324,27 @@ app.get('/dbselect', (req, res) => {
   })
 });
 
-app.post('/dbinsert', (req, res) => {
-  let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
-  db.any(query)
-  .then((rows) => {
-    res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
-});
+// app.post('/dbinsert', (req, res) => {
+//   let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
+//   db.any(query)
+//   .then((rows) => {
+//     res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
+//   })
+//   .catch((error) => {
+//     res.send({message : error});
+//   })
+// });
 
-app.delete('/dbdelete', (req, res) => {
-  let query = `TRUNCATE users CASCADE;`;
-  db.any(query)
-  .then((rows) => {
-    res.send({message : `Data cleared successfully`});
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
-});
+// app.delete('/dbdelete', (req, res) => {
+//   let query = `TRUNCATE users CASCADE;`;
+//   db.any(query)
+//   .then((rows) => {
+//     res.send({message : `Data cleared successfully`});
+//   })
+//   .catch((error) => {
+//     res.send({message : error});
+//   })
+// });
 
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 

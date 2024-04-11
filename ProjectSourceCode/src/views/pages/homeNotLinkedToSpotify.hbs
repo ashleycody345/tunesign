@@ -57,11 +57,13 @@
     <div class="text">
         <h2>Unlock Your Zodiac Insight!</h2>
         <p>Discover your musical zodiac sign! Connect your Spotify account to unlock personalized insights and recommendations tailored just for you.</p>
-        {{!-- !!!! IMPORNTANT, this is temporary, we need to put in the actual connect to spotify link !!!! --}}
-        <a href="/loginwithspotify" class="btn btn-primary">
-            <img src="../../resources/img/spotify.png" alt="Spotify Icon" class="spotify-icon">
-            Connect with Spotify
-        </a>
+        <form action="/loginwithspotify" method="GET">
+            <button type="submit" class="btn btn-success">
+                {{!-- <img src="../../resources/img/spotify.png" alt="Spotify Icon" class="spotify-icon"> --}}
+                Connect with Spotify
+            </button>
+        </form>
     </div>
 </div>
+
 

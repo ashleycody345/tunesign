@@ -61,6 +61,20 @@ app.use(
   })
 );
 
+// functions to query from db
+
+// returns query to select all genres and scores for a particular user
+function dbSelectUserGenres(username){
+  return `SELECT username, genreName, usergenrescore FROM users_to_genres WHERE username = '${username}';`;
+}
+
+// returns query to retrieve one row with only the hashed password associated with username
+function dbRetrieveHashedPassword(username){
+  return `SELECT password FROM users WHERE username = '${username}' LIMIT 1;`;
+}
+
+
+
 // Endpoints for default behavior (use this for login procedure for now)
 
 app.get('/', (req, res) => {

@@ -145,14 +145,23 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/home', (req, res) => {
-  // Check if user is logged in
+  // Check if user is logged into website
   if (req.session.user) {
-    res.render('home', { title: 'Home Page', user: req.session.user });
+    // Check if user is logged into Spotify
+    if (accessToken) {
+      // If logged into both website and Spotify, render the 'home' view
+      res.render('home', { user: req.session.user });
+    } else {
+      // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify
+      res.redirect('/homeNotLinkedToSpotify');
+    }
   } else {
-    // If user is not logged in, redirect to the login with Spotify page
-    res.redirect('/homeNotLinkedToSpotify');
+    // If user is not logged into website, redirect to /about
+    res.redirect('/about');
   }
 });
+
+
 
 app.post('/home', (req, res) => {
   
@@ -319,9 +328,9 @@ app.post('/apipost', (req, res) => {
 app.set('views', path.join(__dirname, 'views', 'pages'));
 
 // Route for loading the home page
-app.get('/home', (req, res) => {
-  res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
-});
+// app.get('/home', (req, res) => {
+//   res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
+// });
 
 // open on port 3000
 

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
     <head>
@@ -95,7 +96,11 @@
                             <h2>About TuneSign</h2>
                             <p>Welcome to TuneSign! We're passionate about connecting music lovers with their astrological signs. Whether you're a fiery Aries rocking out to heavy metal or a dreamy Pisces drifting away to ambient tunes, TuneSign helps you discover your musical zodiac match.</p>
                             <p>Our algorithm analyzes your music preferences and personality traits to recommend the perfect zodiac sign that resonates with your vibe. Unlock the secrets of the stars through your favorite tunes with TuneSign!</p>
-                            <a href="#">Get Started</a>
+                            {{#if user}}
+                                <a href="/home">Get Started</a>
+                            {{else}}
+                                <a href="/login">Get Started</a>
+                            {{/if}}
                         </div>
                     </div>
                 </div>
@@ -340,4 +345,5 @@
         </div>
 
     </body>
+
 </html>

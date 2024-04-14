@@ -1,3 +1,4 @@
+
 // Export endpoints
 
 // Get the modal and button elements
@@ -28,7 +29,7 @@ function showImagePreview() {
 
 // When the user clicks on copy link, it copies it to their clipboard
 copyBtn.onclick = function(){
-  navigator.clipboard.writeText('');
+  navigator.clipboard.writeText('/Users/lachlan/Documents/GitHub/tunesign/ProjectSourceCode/src/resources/img/placeholderLoginBackground.jpg');
   // we could do this however we would have to do a zodaic partial just like how we did it in Web services with the images of each event.
 }
 

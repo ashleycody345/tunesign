@@ -62,6 +62,61 @@ app.use(
   })
 );
 
+// functions to query from db
+
+/**  returns query to select all genres and scores for a particular user
+ // columns: rows.username, rows.genreName, rows.usergenrescore */
+function dbSelectUserGenres(username){
+  return `SELECT username, genreName, usergenrescore FROM users_to_genres WHERE username = '${username}';`;
+}
+
+/** 
+ * returns query to retrieve one row with only the hashed password associated with username
+ * // columns: rows.password */
+function dbRetrieveHashedPassword(username){
+  return `SELECT password FROM users WHERE username = '${username}' LIMIT 1;`;
+}
+/**
+// returns query to push a user with a genre and a score
+// columns: none
+*/
+function dbInsertUserGenre(username, genreName, score){
+  return `INSERT INTO users_to_genres (username, genreName, usergenrescore) VALUES ('${username}', '${genreName}', ${score});`;
+}
+/**
+// returns query to insert genre
+// columns: none
+*/
+function dbInsertGenre(genreName, topzodiac, secondzodiac){
+  return `INSERT INTO genres (genreName, topzodiac, secondzodiac) VALUES ('${genreName}', '${topzodiac}', '${secondzodiac}');`;
+}
+
+/**
+// returns query to assign existing user a zodiac
+// columns: none
+*/
+function dbAddUserZodiac(username, zodiac){
+  return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}';`;
+}
+
+/**
+// returns a user's zodiac and description
+// columns: rows.user, rows.zodiac, rows.desc
+*/
+function dbRetrieveUserZodiac(username){
+  return `SELECT u.username AS user, z.zodiac AS zodiac, z.description AS desc FROM zodiac z, users u WHERE u.username = '${username}' AND u.zodiac = z.zodiac`;
+}
+
+/**
+// returns a genre's zodiac and description
+// columns: rows.zodiac, rows.desc, two rows returned (rows[0], rows[1])
+*/
+function dbRetrieveGenreZodiacs(genreName){
+  return `SELECT z.zodiac AS zodiac, z.description AS desc FROM zodiacs z, genres g WHERE g.genreName = '${genreName}' AND (z.zodiac = g.topzodiac OR z.zodiac = g.secondzodiac);`;
+}
+
+
+
 // Endpoints for default behavior (use this for login procedure for now)
 
 app.get('/', (req, res) => {
@@ -308,18 +363,53 @@ app.get("/getTop5Tracks", async (req, res) => {
     );
   }, {});
 
-  console.log(count)
-
   res.redirect("/about");
 });
 
+function calculateZodiac() {
+  // Initialize scores
+  let zodiacScores = {
+    "Capricorn": 0,
+    "Aquarius": 0,
+    "Pisces": 0,
+    "Aries": 0,
+    "Taurus": 0,
+    "Gemini": 0,
+    "Cancer": 0,
+    "Leo": 0,
+    "Virgo": 0,
+    "Libra": 0,
+    "Scorpio": 0,
+    "Sagittarius": 0
+  }
 
+  // Tally up scores (Needs to read top genres and map to zodiac to get points)
+
+  // Tie breaker (random number generator lol?)
+  // Get largest score
+  let greatestScore = 0;
+  for (let zodiac in zodiacScores) {
+    if (zodiacScores[zodiac] > greatestScore) {
+      greatestScore = zodiacScores[zodiac];
+    }
+  }
+
+  // Get array of zodiacs with the highest score
+  let greatestScoreZodiacs = [];
+  for (let zodiac in zodiacScores) {
+    if (zodiacScores[zodiac] == greatestScore) {
+      greatestScoreZodiacs.push(zodiac);
+    }
+  }
+
+  let zodiacCount = greatestScoreZodiacs.length;
+  return greatestScoreZodiacs[Math.random(zodiacCount)];
+}
 
 // sample endpoints for db testing 
 
 app.get('/dbselect', (req, res) => {
-  let query = `SELECT * FROM users;`;
-  db.any(query)
+  db.any(dbRetrieveGenreZodiacs('Pop'))
   .then((rows) => {
     res.send(rows);
   })
@@ -328,27 +418,27 @@ app.get('/dbselect', (req, res) => {
   })
 });
 
-app.post('/dbinsert', (req, res) => {
-  let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
-  db.any(query)
-  .then((rows) => {
-    res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
-});
+// app.post('/dbinsert', (req, res) => {
+//   let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
+//   db.any(query)
+//   .then((rows) => {
+//     res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
+//   })
+//   .catch((error) => {
+//     res.send({message : error});
+//   })
+// });
 
-app.delete('/dbdelete', (req, res) => {
-  let query = `TRUNCATE users CASCADE;`;
-  db.any(query)
-  .then((rows) => {
-    res.send({message : `Data cleared successfully`});
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
-});
+// app.delete('/dbdelete', (req, res) => {
+//   let query = `TRUNCATE users CASCADE;`;
+//   db.any(query)
+//   .then((rows) => {
+//     res.send({message : `Data cleared successfully`});
+//   })
+//   .catch((error) => {
+//     res.send({message : error});
+//   })
+// });
 
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 

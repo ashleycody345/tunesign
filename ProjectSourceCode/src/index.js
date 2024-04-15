@@ -312,7 +312,7 @@ async function fetchWebApi(endpoint, method, body) {
   return await res.json();
 }
 
-async function getTopTracks(url) {
+async function getTopArtists(url) {
   return (await fetchWebApi(url, 'GET')).items;
 }
 
@@ -327,33 +327,22 @@ async function artistFetch(artistID, method, body) {
   return await res.json();
 }
 
-async function getArtistGenreFromArtists(artistID) {
-  return (await artistFetch(artistID, 'GET')).artists;
-}
-
-
 app.get("/getTop5Tracks", async (req, res) => {
-  const numTracks = 5
-  let artistArr = [];
+  const num = 50
   let genreArr = [];
-  let topTracks;
-  for(let i = 0; i < numTracks; i++) {
-    topTracks = (await getTopTracks(`v1/me/top/tracks?time_range=long_term&limit=1&offset=${i}`))
-    if(!topTracks) {
+  let topArtists = (await getTopArtists(`v1/me/top/artists?time_range=long_term&limit=${num}`))
+  console.log(topTracks)
+  for(let i = 0; i < num; i++) {
+    if(!topArtists[i]) {
       break;
     }
-    topTracks[0].album.artists.forEach(artist => {
-      if(artist.id) {
-        artistArr[i] = artist.id
-      }
-    })
-    let temp = await getArtistGenreFromArtists(artistArr[i])
-    temp[0].genres.forEach(genre => {
+    topArtists[i].genres.forEach(genre => {
       if(genre) {
-        genreArr[i] = genre
+        genreArr.push(genre)
       }
     })
   }
+
   console.log(genreArr)
   
   let count = genreArr.reduce(function (value, value2) {
@@ -363,6 +352,7 @@ app.get("/getTop5Tracks", async (req, res) => {
     );
   }, {});
 
+  console.log(count)
   res.redirect("/about");
 });
 

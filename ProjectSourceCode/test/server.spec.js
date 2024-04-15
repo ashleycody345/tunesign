@@ -38,6 +38,7 @@ describe('Server!', () => {
 // and expects the API to return a status of 200 along with the "Success" message.
 
 describe('Testing Register API', () => {
+
   // Positive Testcase :
   // API: /register
   // Input: {username: 'John Doe', password: 'testpassword'}
@@ -74,6 +75,7 @@ describe('Testing Register API', () => {
         expect(res).to.be.html; // Should have rendered register page again
         done();
       });
+
   });
 });
 

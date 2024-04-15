@@ -264,29 +264,34 @@ async function getArtistGenreFromArtists(artistID) {
 
 
 app.get("/getTop5Tracks", async (req, res) => {
-  let artistArr = [];
-  let genreArr = [];
-  for(let i = 0; i < 5; i++) {
-    let topTracks = (await getTopTracks(`v1/me/top/tracks?time_range=long_term&limit=1&offset=${i}`))
+  const numTracks = 5
+  let artistArr, genreArr = [];
+  let topTracks;
+  for(let i = 0; i < numTracks; i++) {
+    topTracks = (await getTopTracks(`v1/me/top/tracks?time_range=long_term&limit=1&offset=${i}`))
     if(!topTracks) {
       break;
     }
     topTracks[0].album.artists.forEach(artist => {
-      artistArr.push(artist.id)
+      artistArr[i] = (artist.id)
     })
-  }
-
-  for(let j = 0; j < 5; j++) {
     let temp = await getArtistGenreFromArtists(artistArr[j])
     temp[0].genres.forEach(genre => {
       if(genre) {
-        genreArr.push(genre)
+        genreArr[i] = genre
       }
     })
   }
   console.log(genreArr)
   
+  let count = genreArr.reduce(function (value, value2) {
+    return (
+        value[value2] ? ++value[value2] :(value[value2] = 1),
+        value
+    );
+  }, {});
 
+  console.log(count)
 
   res.redirect("/about");
 });

@@ -1,3 +1,4 @@
+
 const express = require('express');
 const app = express();
 const handlebars = require('express-handlebars');
@@ -30,10 +31,11 @@ const dbConfig = {
 // Connect to database using the above details
 const db = pgp(dbConfig);
 
-const redirectURI = "http://localhost:3000/callback"
+const redirectURI = "http://localhost:3000/callback";
 
 let accessToken = "";
 
+let data;
 
 
 // Initializing the App
@@ -85,7 +87,6 @@ app.get("/register", (req, res) => {
 // Register
 app.post('/register', async (req, res) => {
   if(typeof(req.body.username) == 'string' && typeof(req.body.password) == 'string'){
-
     try {
       const encryptedPassword = await bcrypt.hash(req.body.password, 10);
 
@@ -99,7 +100,6 @@ app.post('/register', async (req, res) => {
       res.status(400);
       res.render("register");
     }
-
   }
   else{
     res.status(400);
@@ -145,37 +145,23 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/home', (req, res) => {
-  // Check if user is logged into website
+  // Check if user is logged in
   if (req.session.user) {
-    // Check if user is logged into Spotify
-    if (accessToken) {
-      // If logged into both website and Spotify, render the 'home' view
-      res.render('home', { user: req.session.user });
-    } else {
-      // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify
-      res.redirect('/homeNotLinkedToSpotify');
-    }
+    res.render('home', { title: 'Home Page', user: req.session.user });
   } else {
-    // If user is not logged into website, redirect to /about
+    // If user is not logged in, redirect to the about page
     res.redirect('/about');
   }
 });
-
-
 
 app.post('/home', (req, res) => {
   
 });
 
 app.get('/homeNotLinkedToSpotify', (req, res) => {
-  if (req.session.user) {
-    res.render("homeNotLinkedToSpotify", {
-      user: req.session.user
-    });
-  } else {
-    // Redirect to about page if user is not logged in
-    res.redirect("/about");
-  }
+  res.render("homeNotLinkedToSpotify", {
+    user: req.session.user
+  });
 });
 
 app.post('/homeNotLinkedToSpotify', (req, res) => {
@@ -201,13 +187,15 @@ app.get("/logout", (req, res) => {
 
 
 // Spotify API Interactions
+// Authentication
 app.get('/loginwithspotify', (req, res) => {
   try {
     res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: "code",
       client_id: process.env.CLIENT_ID,
-      redirect_uri: redirectURI,
+      scope: "playlist-read-private playlist-read-collaborative user-top-read user-library-read",
+      redirect_uri: redirectURI
     }));
   } catch (err) { // Return to home page if failed to login
     console.log(err);
@@ -236,6 +224,7 @@ app.get('/callback', async (req, res) => {
       });
 
     accessToken = response.data.access_token;
+    console.log(accessToken);
     res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
@@ -243,12 +232,74 @@ app.get('/callback', async (req, res) => {
   } 
 });
 
+// Helper Functions for /getTop5Tracks
+async function fetchWebApi(endpoint, method, body) {
+  const res = await fetch(`https://api.spotify.com/${endpoint}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    method,
+    body:JSON.stringify(body)
+  });
+  return await res.json();
+}
+
+async function getTopTracks(url){
+  return (await fetchWebApi(url, 'GET')).items;
+}
+
+async function artistFetch(artistID, method, body) {
+  const res = await fetch(`https://api.spotify.com/v1/artists/?ids=${artistID}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    method,
+    body:JSON.stringify(body)
+  });
+  return await res.json();
+}
+
+async function getArtistGenreFromArtists(artistID) {
+  return (await artistFetch(artistID, 'GET')).artists;
+}
+
+
+app.get("/getTop5Tracks", async (req, res) => {
+  const numTracks = 5
+  let artistArr, genreArr = [];
+  let topTracks;
+  for(let i = 0; i < numTracks; i++) {
+    topTracks = (await getTopTracks(`v1/me/top/tracks?time_range=long_term&limit=1&offset=${i}`))
+    if(!topTracks) {
+      break;
+    }
+    topTracks[0].album.artists.forEach(artist => {
+      artistArr[i] = (artist.id)
+    })
+    let temp = await getArtistGenreFromArtists(artistArr[j])
+    temp[0].genres.forEach(genre => {
+      if(genre) {
+        genreArr[i] = genre
+      }
+    })
+  }
+  console.log(genreArr)
+  
+  let count = genreArr.reduce(function (value, value2) {
+    return (
+        value[value2] ? ++value[value2] :(value[value2] = 1),
+        value
+    );
+  }, {});
+
+  console.log(count)
+
+  res.redirect("/about");
+});
 
 
 
-
-// WARNING: these endpoints are only for use in testing tunesign_db. 
-// DO NOT use these elsewhere in development, and REMOVE these before publishing!!!
+// sample endpoints for db testing 
 
 app.get('/dbselect', (req, res) => {
   let query = `SELECT * FROM users;`;
@@ -283,37 +334,6 @@ app.delete('/dbdelete', (req, res) => {
   })
 });
 
-
-app.get('/dbreadgenres', (req, res) => {
-  let query = `SELECT * FROM genres;`;
-  db.any(query)
-  .then((rows) => {
-    res.send(rows);
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
-});
-
-app.get('/dbreadzodiacs', (req, res) => {
-  let query = `SELECT * FROM zodiacs;`;
-  db.any(query)
-  .then((rows) => {
-    res.send(rows);
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
-});
-// end of tunesign_db test endpoibts
-
-
-
-
-
-
-
-
 // sample endpoints for web service implementation (probably will rename and repurpose later?)
 
 app.get('/apirequest', (req, res) => {
@@ -328,9 +348,9 @@ app.post('/apipost', (req, res) => {
 app.set('views', path.join(__dirname, 'views', 'pages'));
 
 // Route for loading the home page
-// app.get('/home', (req, res) => {
-//   res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
-// });
+app.get('/home', (req, res) => {
+  res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
+});
 
 // open on port 3000
 

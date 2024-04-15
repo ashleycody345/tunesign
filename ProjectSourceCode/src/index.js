@@ -145,11 +145,18 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/home', (req, res) => {
-  // Check if user is logged in
+  // Check if user is logged into website
   if (req.session.user) {
-    res.render('home', { title: 'Home Page', user: req.session.user });
+    // Check if user is logged into Spotify
+    if (accessToken) {
+      // If logged into both website and Spotify, render the 'home' view
+      res.render('home', { user: req.session.user });
+    } else {
+      // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify
+      res.redirect('/homeNotLinkedToSpotify');
+    }
   } else {
-    // If user is not logged in, redirect to the about page
+    // If user is not logged into website, redirect to /about
     res.redirect('/about');
   }
 });
@@ -159,9 +166,14 @@ app.post('/home', (req, res) => {
 });
 
 app.get('/homeNotLinkedToSpotify', (req, res) => {
-  res.render("homeNotLinkedToSpotify", {
-    user: req.session.user
-  });
+  if (req.session.user) {
+    res.render("homeNotLinkedToSpotify", {
+      user: req.session.user
+    });
+  } else {
+    // Redirect to about page if user is not logged in
+    res.redirect("/about");
+  }
 });
 
 app.post('/homeNotLinkedToSpotify', (req, res) => {
@@ -181,7 +193,7 @@ app.post('/about', (req, res) => {
 app.get("/logout", (req, res) => {
   req.session.destroy();
   accessToken = null;
-  res.redirect("home");
+  res.redirect("/home");
 });
 
 
@@ -202,6 +214,7 @@ app.get('/loginwithspotify', (req, res) => {
     res.redirect("/");
   }
 });
+
 
 // Spotify API will call this with stuff 
 app.get('/callback', async (req, res) => {
@@ -244,7 +257,7 @@ async function fetchWebApi(endpoint, method, body) {
   return await res.json();
 }
 
-async function getTopTracks(url){
+async function getTopTracks(url) {
   return (await fetchWebApi(url, 'GET')).items;
 }
 
@@ -274,7 +287,9 @@ app.get("/getTop5Tracks", async (req, res) => {
       break;
     }
     topTracks[0].album.artists.forEach(artist => {
-      artistArr[i] = (artist.id)
+      if(artist.id) {
+        artistArr[i] = artist.id
+      }
     })
     let temp = await getArtistGenreFromArtists(artistArr[j])
     temp[0].genres.forEach(genre => {

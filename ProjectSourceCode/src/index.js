@@ -279,7 +279,8 @@ async function getArtistGenreFromArtists(artistID) {
 
 app.get("/getTop5Tracks", async (req, res) => {
   const numTracks = 5
-  let artistArr, genreArr = [];
+  let artistArr = [];
+  let genreArr = [];
   let topTracks;
   for(let i = 0; i < numTracks; i++) {
     topTracks = (await getTopTracks(`v1/me/top/tracks?time_range=long_term&limit=1&offset=${i}`))
@@ -291,7 +292,7 @@ app.get("/getTop5Tracks", async (req, res) => {
         artistArr[i] = artist.id
       }
     })
-    let temp = await getArtistGenreFromArtists(artistArr[j])
+    let temp = await getArtistGenreFromArtists(artistArr[i])
     temp[0].genres.forEach(genre => {
       if(genre) {
         genreArr[i] = genre

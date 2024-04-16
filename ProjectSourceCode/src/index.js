@@ -33,11 +33,6 @@ const db = pgp(dbConfig);
 
 const redirectURI = "http://localhost:3000/callback";
 
-let accessToken = "";
-
-let data;
-
-
 // Initializing the App
 
 // Register `hbs` as our view engine using its bound `engine()` function
@@ -203,7 +198,7 @@ app.get('/home', (req, res) => {
   // Check if user is logged into website
   if (req.session.user) {
     // Check if user is logged into Spotify
-    if (accessToken) {
+    if (req.session.accessToken) {
       // If logged into both website and Spotify, render the 'home' view
       res.render('home', { user: req.session.user });
     } else {
@@ -247,7 +242,6 @@ app.post('/about', (req, res) => {
 
 app.get("/logout", (req, res) => {
   req.session.destroy();
-  accessToken = null;
   res.redirect("/home");
 });
 
@@ -291,8 +285,7 @@ app.get('/callback', async (req, res) => {
         }
       });
 
-    accessToken = response.data.access_token;
-    console.log(accessToken);
+    req.session.accessToken = response.data.access_token;
     res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
@@ -301,7 +294,7 @@ app.get('/callback', async (req, res) => {
 });
 
 // Helper Functions for /getTop5Tracks
-async function fetchWebApi(endpoint, method, body) {
+async function fetchWebApi(accessToken, endpoint, method, body) {
   const res = await fetch(`https://api.spotify.com/${endpoint}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -312,11 +305,11 @@ async function fetchWebApi(endpoint, method, body) {
   return await res.json();
 }
 
-async function getTopArtists(url) {
-  return (await fetchWebApi(url, 'GET')).items;
+async function getTopArtists(accessToken, url) {
+  return (await fetchWebApi(accessToken, url, 'GET')).items;
 }
 
-async function artistFetch(artistID, method, body) {
+async function artistFetch(accessToken, artistID, method, body) {
   const res = await fetch(`https://api.spotify.com/v1/artists/?ids=${artistID}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -328,10 +321,9 @@ async function artistFetch(artistID, method, body) {
 }
 
 app.get("/getTop5Tracks", async (req, res) => {
-  const num = 50
+  const num = 50;
   let genreArr = [];
-  let topArtists = (await getTopArtists(`v1/me/top/artists?time_range=long_term&limit=${num}`))
-  console.log(topTracks)
+  let topArtists = (await getTopArtists(req.session.accessToken, `v1/me/top/artists?time_range=long_term&limit=${num}`));
   for(let i = 0; i < num; i++) {
     if(!topArtists[i]) {
       break;
@@ -342,8 +334,6 @@ app.get("/getTop5Tracks", async (req, res) => {
       }
     })
   }
-
-  console.log(genreArr)
   
   let count = genreArr.reduce(function (value, value2) {
     return (
@@ -352,7 +342,6 @@ app.get("/getTop5Tracks", async (req, res) => {
     );
   }, {});
 
-  console.log(count)
   res.redirect("/about");
 });
 

@@ -199,10 +199,30 @@ app.get('/home', async (req, res) => {
   if (req.session.user) {
     // Check if user is logged into Spotify
     if (req.session.accessToken) {
-      // If logged into both website and Spotify, render the 'home' view
+      // Calculate user zodiac
+      const userZodiac = await calculateZodiac(req.session.accessToken);
+
+      // Define image paths for each sign
+      const zodiacImagePaths = {
+        "Aquarius": "../../resources/img/zodiac/Aquarius.png",
+        "Aries": "../../resources/img/zodiac/Aries.png",
+        "Cancer": "../../resources/img/zodiac/Cancer.png",
+        "Capricorn": "../../resources/img/zodiac/Capricorn.png",
+        "Gemini": "../../resources/img/zodiac/Gemini.png",
+        "Leo": "../../resources/img/zodiac/Leo.png",
+        "Libra": "../../resources/img/zodiac/Libra.png",
+        "Pisces": "../../resources/img/zodiac/Pisces.png",
+        "Sagittarius": "../../resources/img/zodiac/Sagittarius.png",
+        "Scorpio": "../../resources/img/zodiac/Scorpio.png",
+        "Taurus": "../../resources/img/zodiac/Taurus.png",
+        "Virgo": "../../resources/img/zodiac/Virgo.png",
+      };
+
+      // Render the 'home' view with the user's data
       res.render('home', { 
         user: req.session.user,
-        zodiac: await calculateZodiac(req.session.accessToken)
+        zodiac: userZodiac,
+        zodiacImagePath: zodiacImagePaths[userZodiac] // Pass the image path for the user's zodiac sign
       });
     } else {
       // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify

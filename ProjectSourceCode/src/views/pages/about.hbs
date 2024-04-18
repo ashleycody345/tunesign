@@ -40,8 +40,11 @@
     .carousel-control-prev{
         position: fixed;
         filter: invert(100%);
-        transform: translateY(235px);
-        width: -40px;
+        transform: translateY(535px);
+        
+        width: -30px; /* Adjust as needed */
+        height: 30px; /* Adjust as needed */
+        padding: 5px; /* Adjust as needed */
     }
 
 
@@ -88,14 +91,14 @@
                         <a href="/login">Get Started</a>
                     {{/if}}
 
-                    <form action="/getTop5Tracks" method="GET">
+                    {{!-- <form action="/getTop5Tracks" method="GET">
                         <button type="submit">Click me</button>
                     </form>
                     <form action="/loginwithspotify" method="GET">
                         <div class="my-3">
                             <button type="submit" class="btn btn-success">Login with Spotify</button>
                         </div>
-                    </form>
+                    </form> --}}
 
                 </div>
             </div>

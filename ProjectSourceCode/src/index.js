@@ -91,7 +91,7 @@ function dbInsertGenre(genreName, topzodiac, secondzodiac){
 // columns: noned
 */
 function dbAddUserZodiac(username, zodiac){
-  return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}';`;
+  return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}' RETURNING *;`;
 }
 
 /**
@@ -99,7 +99,7 @@ function dbAddUserZodiac(username, zodiac){
 // columns: rows.user, rows.zodiac, rows.desc
 */
 function dbRetrieveUserZodiac(username){
-  return `SELECT u.username AS user, z.zodiac AS zodiac, z.description AS desc FROM zodiac z, users u WHERE u.username = '${username}' AND u.zodiac = z.zodiac`;
+  return `SELECT u.username AS user, z.zodiac AS zodiac, z.description AS desc FROM zodiacs z, users u WHERE u.username = '${username}' AND u.zodiac = z.zodiac`;
 }
 
 /**
@@ -203,8 +203,17 @@ app.get('/home', async (req, res) => {
   if (req.session.user) {
     // Check if user is logged into Spotify
     if (req.session.accessToken) {
-      // Calculate user zodiac
-      const userZodiac = await calculateZodiac(req.session.accessToken);
+      let userZodiac;
+
+      // Get zodiac sign if exists, calculate if not already exists
+      try {
+        const userData = await db.one(dbRetrieveUserZodiac(req.session.user.username));
+        userZodiac = userData.zodiac;
+      } catch (err) {
+        // Retrieve query returned nothing, user has no preexisting zodiac
+        userZodiac = await calculateZodiac(req.session.accessToken);
+        await db.one(dbAddUserZodiac(req.session.user.username, userZodiac));
+      }
 
       // Define image paths for each sign
       const zodiacImagePaths = {

@@ -286,6 +286,7 @@ app.get('/callback', async (req, res) => {
       });
 
     req.session.accessToken = response.data.access_token;
+    req.session.save();
     res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
@@ -320,10 +321,40 @@ async function artistFetch(accessToken, artistID, method, body) {
   return await res.json();
 }
 
-app.get("/getTop5Tracks", async (req, res) => {
+// app.get("/getTop5Tracks", async (req, res) => {
+//   const num = 50;
+//   let genreArr = [];
+//   let topArtists = (await getTopArtists(req.session.accessToken, `v1/me/top/artists?time_range=long_term&limit=${num}`));
+//   for(let i = 0; i < num; i++) {
+//     if(!topArtists[i]) {
+//       break;
+//     }
+//     topArtists[i].genres.forEach(genre => {
+//       if(genre) {
+//         genreArr.push(genre)
+//       }
+//     })
+//   }
+  
+//   let count = genreArr.reduce(function (value, value2) {
+//     return (
+//         value[value2] ? ++value[value2] :(value[value2] = 1),
+//         value
+//     );
+//   }, {});
+
+//   return res.send(count);
+// });
+
+app.get("/test", (req, res) => {
+  calculateZodiac(req.session.accessToken);
+  res.redirect("about");
+});
+
+async function getTop5Tracks(accessToken) {
   const num = 50;
   let genreArr = [];
-  let topArtists = (await getTopArtists(req.session.accessToken, `v1/me/top/artists?time_range=long_term&limit=${num}`));
+  let topArtists = (await getTopArtists(accessToken, `v1/me/top/artists?time_range=long_term&limit=${num}`));
   for(let i = 0; i < num; i++) {
     if(!topArtists[i]) {
       break;
@@ -335,17 +366,15 @@ app.get("/getTop5Tracks", async (req, res) => {
     })
   }
   
-  let count = genreArr.reduce(function (value, value2) {
+  return genreArr.reduce(function (value, value2) {
     return (
         value[value2] ? ++value[value2] :(value[value2] = 1),
         value
     );
   }, {});
+}
 
-  res.redirect("/about");
-});
-
-function calculateZodiac() {
+async function calculateZodiac(accessToken) {
   // Initialize scores
   let zodiacScores = {
     "Capricorn": 0,
@@ -362,7 +391,12 @@ function calculateZodiac() {
     "Sagittarius": 0
   }
 
+
   // Tally up scores (Needs to read top genres and map to zodiac to get points)
+  const genres = await getTop5Tracks(accessToken);
+  for (const key in genres) {
+    console.log(key);
+  }
 
   // Tie breaker (random number generator lol?)
   // Get largest score
@@ -432,10 +466,10 @@ app.post('/apipost', (req, res) => {
 // Adjust the path to the views directory
 app.set('views', path.join(__dirname, 'views', 'pages'));
 
-// Route for loading the home page
-app.get('/home', (req, res) => {
-  res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
-});
+// // Route for loading the home page
+// app.get('/home', (req, res) => {
+//   res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
+// });
 
 // open on port 3000
 

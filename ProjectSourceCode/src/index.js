@@ -145,7 +145,11 @@ app.post('/register', async (req, res) => {
       .then((rows) => {
           res.status(302);
           res.redirect("/login");
-      });
+      })
+      .catch((error) => {
+        res.status(500);
+        res.redirect("/register");
+    })
     } catch (err) {
       res.status(400);
       res.render("register");

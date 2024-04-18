@@ -88,7 +88,7 @@ function dbInsertGenre(genreName, topzodiac, secondzodiac){
 
 /**
 // returns query to assign existing user a zodiac
-// columns: none
+// columns: noned
 */
 function dbAddUserZodiac(username, zodiac){
   return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}';`;
@@ -194,13 +194,16 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/home', (req, res) => {
+app.get('/home', async (req, res) => {
   // Check if user is logged into website
   if (req.session.user) {
     // Check if user is logged into Spotify
     if (req.session.accessToken) {
       // If logged into both website and Spotify, render the 'home' view
-      res.render('home', { user: req.session.user });
+      res.render('home', { 
+        user: req.session.user,
+        zodiac: await calculateZodiac(req.session.accessToken)
+      });
     } else {
       // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify
       res.redirect('/homeNotLinkedToSpotify');
@@ -321,31 +324,7 @@ async function artistFetch(accessToken, artistID, method, body) {
   return await res.json();
 }
 
-// app.get("/getTop5Tracks", async (req, res) => {
-//   const num = 50;
-//   let genreArr = [];
-//   let topArtists = (await getTopArtists(req.session.accessToken, `v1/me/top/artists?time_range=long_term&limit=${num}`));
-//   for(let i = 0; i < num; i++) {
-//     if(!topArtists[i]) {
-//       break;
-//     }
-//     topArtists[i].genres.forEach(genre => {
-//       if(genre) {
-//         genreArr.push(genre)
-//       }
-//     })
-//   }
-  
-//   let count = genreArr.reduce(function (value, value2) {
-//     return (
-//         value[value2] ? ++value[value2] :(value[value2] = 1),
-//         value
-//     );
-//   }, {});
-
-//   return res.send(count);
-// });
-
+// NEED TO REMOVE
 app.get("/test", (req, res) => {
   calculateZodiac(req.session.accessToken);
   res.redirect("about");
@@ -391,14 +370,18 @@ async function calculateZodiac(accessToken) {
     "Sagittarius": 0
   }
 
-
-  // Tally up scores (Needs to read top genres and map to zodiac to get points)
+  // Tally up scores for each zodiac (top zodiac gets 2 points, second gets 1 point)
   const genres = await getTop5Tracks(accessToken);
-  for (const key in genres) {
-    console.log(key);
+  for (const genre in genres) {
+    const correspondingZodiacs = await db.any(dbRetrieveGenreZodiacs(genre));
+    if (correspondingZodiacs.length > 0) {
+      // There exists zodiac data for the genre
+      zodiacScores[correspondingZodiacs[0].zodiac] += 2;
+      zodiacScores[correspondingZodiacs[1].zodiac] += 1;
+    }
   }
 
-  // Tie breaker (random number generator lol?)
+  // Tie breaker (random number generator)
   // Get largest score
   let greatestScore = 0;
   for (let zodiac in zodiacScores) {
@@ -406,7 +389,7 @@ async function calculateZodiac(accessToken) {
       greatestScore = zodiacScores[zodiac];
     }
   }
-
+  
   // Get array of zodiacs with the highest score
   let greatestScoreZodiacs = [];
   for (let zodiac in zodiacScores) {
@@ -416,8 +399,16 @@ async function calculateZodiac(accessToken) {
   }
 
   let zodiacCount = greatestScoreZodiacs.length;
-  return greatestScoreZodiacs[Math.random(zodiacCount)];
+  return greatestScoreZodiacs[getRandomInt(0, zodiacCount)];
 }
+
+// Helper function (from MDN web docs)
+function getRandomInt(min, max) {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
 
 // sample endpoints for db testing 
 

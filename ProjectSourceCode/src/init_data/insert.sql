@@ -14,10 +14,10 @@ INSERT INTO zodiacs (zodiac, description) VALUES
 
 
 INSERT INTO genres (genreName, topzodiac, secondzodiac) VALUES 
-('hip hop hap', 'Scorpio', 'Aries'),
-('hop', 'Libra', 'Leo'),
-('hountry', 'Taurus', 'Cancer'),
-('hock', 'Capricorn', 'Sagittarius'),
+('hip hop rap', 'Scorpio', 'Aries'),
+('pop', 'Libra', 'Leo'),
+('country', 'Taurus', 'Cancer'),
+('rock', 'Capricorn', 'Sagittarius'),
 ('edm', 'Aquarius', 'Gemini'),
 ('indie', 'Pisces', 'Virgo'),
 ('jazz', 'Gemini', 'Scorpio'),

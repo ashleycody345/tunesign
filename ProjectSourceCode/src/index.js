@@ -31,7 +31,7 @@ const dbConfig = {
 // Connect to database using the above details
 const db = pgp(dbConfig);
 
-const redirectURI = "http://localhost:3000/callback";
+const redirectURI = "http://recitation-14-team-03.eastus.cloudapp.azure.com:3000/callback";
 
 // Initializing the App
 

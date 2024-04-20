@@ -396,6 +396,15 @@ function calculateZodiac() {
   return greatestScoreZodiacs[Math.random(zodiacCount)];
 }
 
+function parsingData(input) {
+  genres = ["hip hop rap", "pop", "country", "rock", "edm", "indie", "jazz", "classical", "r&b", "punk", "alternative", "folk", "tv & film", "chill", "trending", "soul", "ambient", "love", "metal", "instrumental"];
+  input.forEach(g=> {
+    parseArr = g.split(" ")
+    parseArr = parseArr.split("-")
+  })
+
+}
+
 // sample endpoints for db testing 
 
 app.get('/dbselect', (req, res) => {

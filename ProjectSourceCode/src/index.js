@@ -205,15 +205,18 @@ app.get('/home', async (req, res) => {
     // Check if user is logged into Spotify
     if (req.session.accessToken) {
       let userZodiac;
+      let zodiacDescription;
 
       // Get zodiac sign if exists, calculate if not already exists
       try {
-        const userData = await db.one(dbRetrieveUserZodiac(req.session.user.username));
-        userZodiac = userData.zodiac;
-      } catch (err) {
-        // Retrieve query returned nothing, user has no preexisting zodiac
         userZodiac = await calculateZodiac(req.session.accessToken);
-        await db.one(dbAddUserZodiac(req.session.user.username, userZodiac));
+        zodiacDescription = await db.one(dbRetrieveZodiacDescription(userZodiac));
+      } catch (err) {
+        // Handle errors
+        console.error('Error:', err);
+        // Set default values or handle errors as needed
+        userZodiac = 'Default Zodiac';
+        zodiacDescription = 'Default Description';
       }
 
       // Define image paths for each sign
@@ -236,6 +239,7 @@ app.get('/home', async (req, res) => {
       res.render('home', { 
         user: req.session.user,
         zodiac: userZodiac,
+        zodiacDescription: zodiacDescription.desc, // Use the retrieved description
         zodiacImagePath: zodiacImagePaths[userZodiac] // Pass the image path for the user's zodiac sign
       });
     } else {
@@ -247,6 +251,8 @@ app.get('/home', async (req, res) => {
     res.redirect('/about');
   }
 });
+
+
 
 app.post('/home', (req, res) => {
   
@@ -441,6 +447,10 @@ function getRandomInt(min, max) {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
+function dbRetrieveZodiacDescription(zodiacName) {
+  return `SELECT z.description AS desc FROM zodiacs z WHERE z.zodiac = '${zodiacName}';`;
 }
 
 

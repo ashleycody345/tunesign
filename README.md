@@ -2,20 +2,17 @@
 ## Description
 TuneSign utilizes the Spotify API to allow users to sign in using their Spotify account and analyzes their data regarding their listening history, including their most listened to genres.
 
-## Contributors
-* Jasper Shen
-* Benedict Antonious
-* Ashley Cody
-* Langston Denning
-* Lachlan Kotarski
 
 ## Technology Stack
 Built with Spotify API, PostgreSQL, Handlebars, NodeJS.
 
 ## Prerequisites to Run TuneSign
-No prerequisites or dependencies need to be installed locally. A separate Spotify account is required for most features.
+* You have a **Windows/Linux/Mac** machine.
+* You have installed the latest version of **Docker**.
+* You have a Spotify Developer account with an app.
+* You have a Spotify account with a listening history.
 
-## Instructions to run locally:
+## Instructions to Run Locally:
 After downloading the source code, run Docker Compose in the /ProjectSourceCode folder after creating an appropriate .env file:
 ```
 POSTGRES_USER="postgres"
@@ -24,13 +21,21 @@ POSTGRES_DB="tunesign_db"
 
 SESSION_SECRET="secret"
 
-CLIENT_ID = "80cb40fc4c6f4cc9a7dd6ad33d600cbd"
-CLIENT_SECRET = "027cd8c76fc947e7bc7c859b0e8f0b0c"
+CLIENT_ID = "<Your Spotify Dev App Client ID>"
+CLIENT_SECRET = "<Your Spotify Dev App Client Secret>"
 ```
+Fill out the CLIENT_ID and CLIENT_SECRET using the your own Spotify Developer App details.
 Alternatively, navigate to the link below for our hosted website.
 
-## How to run tests:
+## How to Run Tests:
 Tests will run automatically upon starting the Docker container. 
 
-## Deployed application:
-http://recitation-14-team-03.eastus.cloudapp.azure.com:3000/about
+## Deployed Application:
+[TuneSign](http://recitation-14-team-03.eastus.cloudapp.azure.com:3000/about)
+
+## Contributors
+* Jasper Shen
+* Benedict Antonious
+* Ashley Cody
+* Langston Denning
+* Lachlan Kotarski

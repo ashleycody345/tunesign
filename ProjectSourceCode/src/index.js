@@ -398,11 +398,19 @@ function calculateZodiac() {
 
 function parsingData(input) {
   genres = ["hip hop rap", "pop", "country", "rock", "edm", "indie", "jazz", "classical", "r&b", "punk", "alternative", "folk", "tv & film", "chill", "trending", "soul", "ambient", "love", "metal", "instrumental"];
+  hip = ["hip", "hop", "rap"]
+  toRet = []
   input.forEach(g=> {
-    parseArr = g.split(" ")
-    parseArr = parseArr.split("-")
+    parseArr = g.split(" ").join(",").split("-")
+    parseArr.forEach(p=> {
+      if(hip.includes(p)) {
+        toRet.push("hip hop rap")
+      } else if(genres.includes(p)) {
+        toRet.push(p)
+      }
+    })
   })
-
+  return toRet;
 }
 
 // sample endpoints for db testing 

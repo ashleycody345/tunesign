@@ -400,7 +400,7 @@ async function getTop5Tracks(accessToken) {
       }
     })
   }
-  
+  genreArr = parsingData(genreArr)
   return genreArr.reduce(function (value, value2) {
     return (
         value[value2] ? ++value[value2] :(value[value2] = 1),

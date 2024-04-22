@@ -29,7 +29,15 @@ function showImagePreview() {
 
 // When the user clicks on copy link, it copies it to their clipboard
 copyBtn.onclick = function(){
-  navigator.clipboard.writeText('/Users/lachlan/Documents/GitHub/tunesign/ProjectSourceCode/src/resources/img/placeholderLoginBackground.jpg');
+  // navigator.clipboard.writeText('');
+  var imagePath = publicZodiacImagePath; // Get the public zodiac image path from the template
+    navigator.clipboard.writeText(imagePath)
+        .then(function() {
+            alert("Link copied to clipboard: " + imagePath);
+        })
+        .catch(function(error) {
+            console.error('Failed to copy: ', error);
+        });
   // we could do this however we would have to do a zodaic partial just like how we did it in Web services with the images of each event.
 }
 

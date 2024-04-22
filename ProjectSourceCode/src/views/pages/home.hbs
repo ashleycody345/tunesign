@@ -114,13 +114,15 @@
               <h2>Preview</h2>
 
               {{!--Get zodiac graphic based on zodiac algorithm--}}
-              <img class="card-img-top" id="zodiacImage" src="../../resources/img/placeholderLoginBackground.jpg">
+              <img class="card-img-top" id="zodiacImage" src="{{zodiacImagePath}}">
               {{!--Get zodiac sign name based on zodiac algorithm--}}
-              <p>Temporary Text</p>
               <button type="button" class="btn btn-copy" id="copyBtn">Copy Link</button>
-              <button type="button" class="btn btn-download" id="downloadBtn" href="../../resources/img/placeholderLoginBackground.jpg" download>Download Zodiac Graphic</button>
+              <button type="button" class="btn btn-download" id="downloadBtn" href="{{zodiacImagePath}}" download>Download Zodiac Graphic</button>
             </div>
           </div>
+        <script>
+          var publicZodiacImagePath = "{{publicZodiacImagePath}}";
+        </script>
         <script src="../../resources/js/script.js"></script>
     </div>
     <div class="zodiac">

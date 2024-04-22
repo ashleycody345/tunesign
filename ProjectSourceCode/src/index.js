@@ -235,12 +235,28 @@ app.get('/home', async (req, res) => {
         "Virgo": "../../resources/img/zodiac/Virgo.png",
       };
 
+      const publicZodiacImagePaths = {
+        "Aquarius": "https://drive.google.com/file/d/1U49kn-hZ2iJmmfDJxnjGbs3uYuhbi4EK/view?usp=drive_link",
+        "Aries": "https://drive.google.com/file/d/1052kx_XChizl-vli0zUHkphv0DkSDyQX/view?usp=drive_link",
+        "Cancer": "https://drive.google.com/file/d/1xeGZYKQgRV4fuIGrMmiuC1EehJqnk5cV/view?usp=drive_link",
+        "Capricorn": "https://drive.google.com/file/d/13Txt_H2iu03x4L5GmIqii7PPrSE5iozr/view?usp=drive_link",
+        "Gemini": "https://drive.google.com/file/d/1CdG-oCKfLHSeRKevHwLsM9JVtvDoeJF-/view?usp=drive_link",
+        "Leo": "https://drive.google.com/file/d/1R3x6I8BK3gEaqtDbGfoEXfytpGQIkIS7/view?usp=drive_link",
+        "Libra": "https://drive.google.com/file/d/1MXTr-OFMfyq5ef5QGNtFnoRgNAZWnsoU/view?usp=drive_link",
+        "Pisces": "https://drive.google.com/file/d/1kFtCxtLzgfX23GmGfbhiJJYgMjXFvFaP/view?usp=drive_link",
+        "Sagittarius": "https://drive.google.com/file/d/1PZRydzqM9XWte0JrhnEovNcHngJ4aatc/view?usp=drive_link",
+        "Scorpio": "https://drive.google.com/file/d/1DcdUVvU-C9P_52hhvsg1fn968l8jeBLk/view?usp=drive_link",
+        "Taurus": "https://drive.google.com/file/d/19I9FE4V7FZkBAp-XkQjE-Cwc-gxwGydp/view?usp=drive_link",
+        "Virgo": "https://drive.google.com/file/d/1Y8Z4XUI2Qiso7AQBO7jR6GZZrsBGwmBK/view?usp=drive_link",
+      };
+
       // Render the 'home' view with the user's data
       res.render('home', { 
         user: req.session.user,
         zodiac: userZodiac,
         zodiacDescription: zodiacDescription.desc, // Use the retrieved description
-        zodiacImagePath: zodiacImagePaths[userZodiac] // Pass the image path for the user's zodiac sign
+        zodiacImagePath: zodiacImagePaths[userZodiac], // Pass the image path for the user's zodiac sign
+        publicZodiacImagePath:publicZodiacImagePaths[userZodiac]
       });
     } else {
       // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify

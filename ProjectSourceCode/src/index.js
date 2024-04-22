@@ -31,12 +31,8 @@ const dbConfig = {
 // Connect to database using the above details
 const db = pgp(dbConfig);
 
-const redirectURI = "http://localhost:3000/callback";
-
-let accessToken = "";
-
-let data;
-
+// const redirectURI = "http://recitation-14-team-03.eastus.cloudapp.azure.com:3000/callback";
+const redirectURI = "http://localhost:3000/callback"; // For local hosting
 
 // Initializing the App
 
@@ -93,10 +89,10 @@ function dbInsertGenre(genreName, topzodiac, secondzodiac){
 
 /**
 // returns query to assign existing user a zodiac
-// columns: none
+// columns: noned
 */
 function dbAddUserZodiac(username, zodiac){
-  return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}';`;
+  return `UPDATE users SET zodiac = '${zodiac}' WHERE username = '${username}' RETURNING *;`;
 }
 
 /**
@@ -104,7 +100,7 @@ function dbAddUserZodiac(username, zodiac){
 // columns: rows.user, rows.zodiac, rows.desc
 */
 function dbRetrieveUserZodiac(username){
-  return `SELECT u.username AS user, z.zodiac AS zodiac, z.description AS desc FROM zodiac z, users u WHERE u.username = '${username}' AND u.zodiac = z.zodiac`;
+  return `SELECT u.username AS user, z.zodiac AS zodiac, z.description AS desc FROM zodiacs z, users u WHERE u.username = '${username}' AND u.zodiac = z.zodiac`;
 }
 
 /**
@@ -150,7 +146,11 @@ app.post('/register', async (req, res) => {
       .then((rows) => {
           res.status(302);
           res.redirect("/login");
-      });
+      })
+      .catch((error) => {
+        res.status(500);
+        res.redirect("/register");
+    })
     } catch (err) {
       res.status(400);
       res.render("register");
@@ -199,13 +199,49 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/home', (req, res) => {
+app.get('/home', async (req, res) => {
   // Check if user is logged into website
   if (req.session.user) {
     // Check if user is logged into Spotify
-    if (accessToken) {
-      // If logged into both website and Spotify, render the 'home' view
-      res.render('home', { user: req.session.user });
+    if (req.session.accessToken) {
+      let userZodiac;
+      let zodiacDescription;
+
+      // Get zodiac sign if exists, calculate if not already exists
+      try {
+        userZodiac = await calculateZodiac(req.session.accessToken);
+        zodiacDescription = await db.one(dbRetrieveZodiacDescription(userZodiac));
+      } catch (err) {
+        // Handle errors
+        console.error('Error:', err);
+        // Set default values or handle errors as needed
+        userZodiac = 'Default Zodiac';
+        zodiacDescription = 'Default Description';
+      }
+
+      // Define image paths for each sign
+      const zodiacImagePaths = {
+        "Aquarius": "../../resources/img/zodiac/Aquarius.png",
+        "Aries": "../../resources/img/zodiac/Aries.png",
+        "Cancer": "../../resources/img/zodiac/Cancer.png",
+        "Capricorn": "../../resources/img/zodiac/Capricorn.png",
+        "Gemini": "../../resources/img/zodiac/Gemini.png",
+        "Leo": "../../resources/img/zodiac/Leo.png",
+        "Libra": "../../resources/img/zodiac/Libra.png",
+        "Pisces": "../../resources/img/zodiac/Pisces.png",
+        "Sagittarius": "../../resources/img/zodiac/Sagittarius.png",
+        "Scorpio": "../../resources/img/zodiac/Scorpio.png",
+        "Taurus": "../../resources/img/zodiac/Taurus.png",
+        "Virgo": "../../resources/img/zodiac/Virgo.png",
+      };
+
+      // Render the 'home' view with the user's data
+      res.render('home', { 
+        user: req.session.user,
+        zodiac: userZodiac,
+        zodiacDescription: zodiacDescription.desc, // Use the retrieved description
+        zodiacImagePath: zodiacImagePaths[userZodiac] // Pass the image path for the user's zodiac sign
+      });
     } else {
       // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify
       res.redirect('/homeNotLinkedToSpotify');
@@ -215,6 +251,8 @@ app.get('/home', (req, res) => {
     res.redirect('/about');
   }
 });
+
+
 
 app.post('/home', (req, res) => {
   
@@ -247,7 +285,6 @@ app.post('/about', (req, res) => {
 
 app.get("/logout", (req, res) => {
   req.session.destroy();
-  accessToken = null;
   res.redirect("/home");
 });
 
@@ -291,8 +328,8 @@ app.get('/callback', async (req, res) => {
         }
       });
 
-    accessToken = response.data.access_token;
-    console.log(accessToken);
+    req.session.accessToken = response.data.access_token;
+    req.session.save();
     res.redirect("/home")
   } catch (err) { // Redirect to home if API call doesn't return something correctly or something like that
     console.log(err);
@@ -301,7 +338,7 @@ app.get('/callback', async (req, res) => {
 });
 
 // Helper Functions for /getTop5Tracks
-async function fetchWebApi(endpoint, method, body) {
+async function fetchWebApi(accessToken, endpoint, method, body) {
   const res = await fetch(`https://api.spotify.com/${endpoint}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -312,11 +349,11 @@ async function fetchWebApi(endpoint, method, body) {
   return await res.json();
 }
 
-async function getTopArtists(url) {
-  return (await fetchWebApi(url, 'GET')).items;
+async function getTopArtists(accessToken, url) {
+  return (await fetchWebApi(accessToken, url, 'GET')).items;
 }
 
-async function artistFetch(artistID, method, body) {
+async function artistFetch(accessToken, artistID, method, body) {
   const res = await fetch(`https://api.spotify.com/v1/artists/?ids=${artistID}`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -327,11 +364,16 @@ async function artistFetch(artistID, method, body) {
   return await res.json();
 }
 
-app.get("/getTop5Tracks", async (req, res) => {
-  const num = 50
+// NEED TO REMOVE
+app.get("/test", (req, res) => {
+  calculateZodiac(req.session.accessToken);
+  res.redirect("about");
+});
+
+async function getTop5Tracks(accessToken) {
+  const num = 50;
   let genreArr = [];
-  let topArtists = (await getTopArtists(`v1/me/top/artists?time_range=long_term&limit=${num}`))
-  console.log(topTracks)
+  let topArtists = (await getTopArtists(accessToken, `v1/me/top/artists?time_range=long_term&limit=${num}`));
   for(let i = 0; i < num; i++) {
     if(!topArtists[i]) {
       break;
@@ -342,21 +384,16 @@ app.get("/getTop5Tracks", async (req, res) => {
       }
     })
   }
-
-  console.log(genreArr)
   
-  let count = genreArr.reduce(function (value, value2) {
+  return genreArr.reduce(function (value, value2) {
     return (
         value[value2] ? ++value[value2] :(value[value2] = 1),
         value
     );
   }, {});
+}
 
-  console.log(count)
-  res.redirect("/about");
-});
-
-function calculateZodiac() {
+async function calculateZodiac(accessToken) {
   // Initialize scores
   let zodiacScores = {
     "Capricorn": 0,
@@ -373,9 +410,18 @@ function calculateZodiac() {
     "Sagittarius": 0
   }
 
-  // Tally up scores (Needs to read top genres and map to zodiac to get points)
+  // Tally up scores for each zodiac (top zodiac gets 2 points, second gets 1 point)
+  const genres = await getTop5Tracks(accessToken);
+  for (const genre in genres) {
+    const correspondingZodiacs = await db.any(dbRetrieveGenreZodiacs(genre));
+    if (correspondingZodiacs.length > 0) {
+      // There exists zodiac data for the genre
+      zodiacScores[correspondingZodiacs[0].zodiac] += 2;
+      zodiacScores[correspondingZodiacs[1].zodiac] += 1;
+    }
+  }
 
-  // Tie breaker (random number generator lol?)
+  // Tie breaker (random number generator)
   // Get largest score
   let greatestScore = 0;
   for (let zodiac in zodiacScores) {
@@ -383,7 +429,7 @@ function calculateZodiac() {
       greatestScore = zodiacScores[zodiac];
     }
   }
-
+  
   // Get array of zodiacs with the highest score
   let greatestScoreZodiacs = [];
   for (let zodiac in zodiacScores) {
@@ -393,7 +439,7 @@ function calculateZodiac() {
   }
 
   let zodiacCount = greatestScoreZodiacs.length;
-  return greatestScoreZodiacs[Math.random(zodiacCount)];
+  return greatestScoreZodiacs[getRandomInt(0, zodiacCount)];
 }
 
 function parsingData(input) {
@@ -412,6 +458,18 @@ function parsingData(input) {
   })
   return toRet;
 }
+
+// Helper function (from MDN web docs)
+function getRandomInt(min, max) {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
+function dbRetrieveZodiacDescription(zodiacName) {
+  return `SELECT z.description AS desc FROM zodiacs z WHERE z.zodiac = '${zodiacName}';`;
+}
+
 
 // sample endpoints for db testing 
 
@@ -460,13 +518,14 @@ app.post('/apipost', (req, res) => {
 // Adjust the path to the views directory
 app.set('views', path.join(__dirname, 'views', 'pages'));
 
-// Route for loading the home page
-app.get('/home', (req, res) => {
-  res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
-});
+// // Route for loading the home page
+// app.get('/home', (req, res) => {
+//   res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
+// });
 
 // open on port 3000
 
 module.exports = app.listen(port, () => {
   console.log(`App listening on port ${port}`)
 });
+

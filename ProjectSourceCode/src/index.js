@@ -209,7 +209,15 @@ app.get('/home', async (req, res) => {
 
       // Get zodiac sign if exists, calculate if not already exists
       try {
-        userZodiac = await calculateZodiac(req.session.accessToken);
+        if(req.session.user.zodiac){
+          userZodiac = req.session.user.zodiac;
+        }
+        else {
+          userZodiac = await calculateZodiac(req.session.accessToken);
+          req.session.user.zodiac = userZodiac;
+
+          // db.task(`UPDATE users SET zodiac = ${userZodiac} WHERE username = ${req.session.user.username};`);
+        }
         zodiacDescription = await db.one(dbRetrieveZodiacDescription(userZodiac));
       } catch (err) {
         // Handle errors
@@ -489,14 +497,8 @@ function dbRetrieveZodiacDescription(zodiacName) {
 
 // sample endpoints for db testing 
 
-app.get('/dbselect', (req, res) => {
-  db.any(dbRetrieveGenreZodiacs('Pop'))
-  .then((rows) => {
-    res.send(rows);
-  })
-  .catch((error) => {
-    res.send({message : error});
-  })
+app.get('/testusersession', (req, res) => {
+  res.send(req.session.user.zodiac);
 });
 
 // app.post('/dbinsert', (req, res) => {

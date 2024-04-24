@@ -149,16 +149,25 @@ app.post('/register', async (req, res) => {
       })
       .catch((error) => {
         res.status(500);
-        res.redirect("/register");
+        res.render("register", {
+          error: true,
+          message: "Username already exists"
+        });
     })
     } catch (err) {
       res.status(400);
-      res.render("register");
+      res.render("register", {
+        error: true,
+        message: "Registration error"
+      });
     }
   }
   else{
     res.status(400);
-    res.render("register");
+    res.render("register", {
+      error: true,
+      message: "Registration error"
+    });  
   }
 });
 // End Lab 11 Stuff
@@ -191,10 +200,11 @@ app.post('/login', async (req, res) => {
       });
     }
   } catch (err) {
-    res.status(400);
+    console.log(err);
+    res.status(400);  
     res.render("login", {
       error: true,
-      message: "ERROR: Login failed"
+      message: "Incorrect Username or Password"
     });
   }
 });
@@ -276,12 +286,6 @@ app.get('/home', async (req, res) => {
   }
 });
 
-
-
-app.post('/home', (req, res) => {
-  
-});
-
 app.get('/homeNotLinkedToSpotify', (req, res) => {
   if (req.session.user) {
     res.render("homeNotLinkedToSpotify", {
@@ -293,18 +297,10 @@ app.get('/homeNotLinkedToSpotify', (req, res) => {
   }
 });
 
-app.post('/homeNotLinkedToSpotify', (req, res) => {
-  
-});
-
 app.get('/about', (req, res) => {
   res.render("about", {
     user: req.session.user
   });
-});
-
-app.post('/about', (req, res) => {
-  
 });
 
 app.get("/logout", (req, res) => {
@@ -330,7 +326,6 @@ app.get('/loginwithspotify', (req, res) => {
     res.redirect("/");
   }
 });
-
 
 // Spotify API will call this with stuff 
 app.get('/callback', async (req, res) => {
@@ -387,12 +382,6 @@ async function artistFetch(accessToken, artistID, method, body) {
   });
   return await res.json();
 }
-
-// NEED TO REMOVE
-app.get("/test", (req, res) => {
-  calculateZodiac(req.session.accessToken);
-  res.redirect("about");
-});
 
 async function getTop5Tracks(accessToken) {
   const num = 50;
@@ -494,52 +483,8 @@ function dbRetrieveZodiacDescription(zodiacName) {
   return `SELECT z.description AS desc FROM zodiacs z WHERE z.zodiac = '${zodiacName}';`;
 }
 
-
-// sample endpoints for db testing 
-
-app.get('/testusersession', (req, res) => {
-  res.send(req.session.user.zodiac);
-});
-
-// app.post('/dbinsert', (req, res) => {
-//   let query = `INSERT INTO users (username, password) VALUES ('${req.body.username}', '${req.body.password}');`;
-//   db.any(query)
-//   .then((rows) => {
-//     res.send({message : `Data entered successfully: username ${req.body.username}, password ${req.body.password}`});
-//   })
-//   .catch((error) => {
-//     res.send({message : error});
-//   })
-// });
-
-// app.delete('/dbdelete', (req, res) => {
-//   let query = `TRUNCATE users CASCADE;`;
-//   db.any(query)
-//   .then((rows) => {
-//     res.send({message : `Data cleared successfully`});
-//   })
-//   .catch((error) => {
-//     res.send({message : error});
-//   })
-// });
-
-// sample endpoints for web service implementation (probably will rename and repurpose later?)
-
-app.get('/apirequest', (req, res) => {
-  res.send('Hello World!');
-})
-
-app.post('/apipost', (req, res) => {
-  res.send('Hello World!');
-})
-
 // Adjust the path to the views directory
 app.set('views', path.join(__dirname, 'views', 'pages'));
-
-// // Route for loading the home page
-// app.get('/home', (req, res) => {
-//   res.render('home', { title: 'Home Page' }); // Assuming you have a view file named 'home.hbs' in your 'views/pages' directory
-// });
 
 // open on port 3000
 

@@ -372,17 +372,6 @@ async function getTopArtists(accessToken, url) {
   return (await fetchWebApi(accessToken, url, 'GET')).items;
 }
 
-async function artistFetch(accessToken, artistID, method, body) {
-  const res = await fetch(`https://api.spotify.com/v1/artists/?ids=${artistID}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-    method,
-    body:JSON.stringify(body)
-  });
-  return await res.json();
-}
-
 async function getTop5Tracks(accessToken) {
   const num = 50;
   let genreArr = [];
@@ -398,6 +387,7 @@ async function getTop5Tracks(accessToken) {
     })
   }
   genreArr = parsingData(genreArr)
+  console.log(genreArr)
   return genreArr.reduce(function (value, value2) {
     return (
         value[value2] ? ++value[value2] :(value[value2] = 1),

@@ -149,16 +149,25 @@ app.post('/register', async (req, res) => {
       })
       .catch((error) => {
         res.status(500);
-        res.redirect("/register");
+        res.render("register", {
+          error: true,
+          message: "Username already exists"
+        });
     })
     } catch (err) {
       res.status(400);
-      res.render("register");
+      res.render("register", {
+        error: true,
+        message: "Registration error"
+      });
     }
   }
   else{
     res.status(400);
-    res.render("register");
+    res.render("register", {
+      error: true,
+      message: "Registration error"
+    });  
   }
 });
 // End Lab 11 Stuff
@@ -191,10 +200,11 @@ app.post('/login', async (req, res) => {
       });
     }
   } catch (err) {
-    res.status(400);
+    console.log(err);
+    res.status(400);  
     res.render("login", {
       error: true,
-      message: "ERROR: Login failed"
+      message: "Incorrect Username or Password"
     });
   }
 });

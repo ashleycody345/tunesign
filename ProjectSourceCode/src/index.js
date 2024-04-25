@@ -116,7 +116,7 @@ function dbRetrieveGenreZodiacs(genreName){
 // Endpoints for default behavior (use this for login procedure for now)
 
 app.get('/', (req, res) => {
-  res.redirect('home');
+  res.redirect('about');
 });
 
 
@@ -214,25 +214,27 @@ app.get('/home', async (req, res) => {
   if (req.session.user) {
     // Check if user is logged into Spotify
     if (req.session.accessToken) {
-      let userData;
+      let userZodiac;
       let zodiacDescription;
-
 
       // Get zodiac sign if exists, calculate if not already exists
       try {
-        userData = await db.one(dbRetrieveUserZodiac(req.session.user.username));
-      } catch (err) { // User zodiac not in database already
-        console.log(err);
-        userData = await calculateZodiac(req.session.accessToken);
-        await db.one(dbAddUserZodiac(req.session.user.username, userData.zodiac));
-      }
+        if(req.session.user.zodiac){
+          userZodiac = req.session.user.zodiac;
+        }
+        else {
+          userZodiac = await calculateZodiac(req.session.accessToken);
+          req.session.user.zodiac = userZodiac;
 
-      // Get corresponding description for the user zodiac
-      try {
-        zodiacDescription = await db.one(dbRetrieveZodiacDescription(userData.zodiac));
+          // db.task(`UPDATE users SET zodiac = ${userZodiac} WHERE username = ${req.session.user.username};`);
+        }
+        zodiacDescription = await db.one(dbRetrieveZodiacDescription(userZodiac));
       } catch (err) {
-        // Should never error but just in case
-        console.log(err);
+        // Handle errors
+        console.error('Error:', err);
+        // Set default values or handle errors as needed
+        userZodiac = 'Default Zodiac';
+        zodiacDescription = 'Default Description';
       }
 
       // Define image paths for each sign
@@ -269,10 +271,10 @@ app.get('/home', async (req, res) => {
       // Render the 'home' view with the user's data
       res.render('home', { 
         user: req.session.user,
-        zodiac: userData.zodiac,
+        zodiac: userZodiac,
         zodiacDescription: zodiacDescription.desc, // Use the retrieved description
-        zodiacImagePath: zodiacImagePaths[userData.zodiac], // Pass the image path for the user's zodiac sign
-        publicZodiacImagePath:publicZodiacImagePaths[userData.zodiac]
+        zodiacImagePath: zodiacImagePaths[userZodiac], // Pass the image path for the user's zodiac sign
+        publicZodiacImagePath:publicZodiacImagePaths[userZodiac]
       });
     } else {
       // If logged into website but not Spotify, redirect to /homeNotLinkedToSpotify
@@ -384,8 +386,8 @@ async function getTop5Tracks(accessToken) {
       }
     })
   }
-  genreArr = parsingData(genreArr);
-  console.log(genreArr);
+  genreArr = parsingData(genreArr)
+  console.log(genreArr)
   return genreArr.reduce(function (value, value2) {
     return (
         value[value2] ? ++value[value2] :(value[value2] = 1),

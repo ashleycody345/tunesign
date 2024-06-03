@@ -19,6 +19,8 @@ const hbs = handlebars.create({
   partialsDir: __dirname + '/views/partials',
 });
 
+// test
+
 // initialize
 const dbConfig = {
   host: 'db', 
